@@ -1,15 +1,15 @@
 {
   "backend": "webgl2",
-  "fps": 60.014003267429096,
-  "frameMs": 16.66277777777777,
-  "drawCalls": 86,
-  "triangles": 22267,
-  "geometries": 98,
+  "fps": 60.01400326742911,
+  "frameMs": 16.662777777777766,
+  "drawCalls": 92,
+  "triangles": 22495,
+  "geometries": 104,
   "textures": 3,
   "width": 1920,
   "height": 1080,
   "pixelRatio": 1,
-  "cameraX": 368.9999999978993,
+  "cameraX": 368.9999999979004,
   "viewWidth": 199.11111111111111,
   "seed": 8042,
   "scenario": "combat-showcase",
@@ -20,13 +20,68 @@
     "enemies": 3,
     "colonists": 7,
     "projectiles": 5,
-    "particles": 18
+    "particles": 104
   },
   "wave": {
     "outcome": "active",
     "score": 700,
     "delivered": 1,
     "remainingSpawns": 0
+  },
+  "difficulty": "normal",
+  "speed": 1,
+  "controller": {
+    "available": true,
+    "error": "",
+    "id": null,
+    "mapping": null,
+    "calibrated": false,
+    "calibrationStep": -1,
+    "lastActivity": "Esperando que muevas o pulses un control",
+    "axes": [],
+    "buttons": [],
+    "profile": {
+      "left": {
+        "kind": "axis",
+        "index": 0,
+        "sign": -1
+      },
+      "right": {
+        "kind": "axis",
+        "index": 0,
+        "sign": 1
+      },
+      "up": {
+        "kind": "axis",
+        "index": 1,
+        "sign": -1
+      },
+      "down": {
+        "kind": "axis",
+        "index": 1,
+        "sign": 1
+      },
+      "fire": {
+        "kind": "button",
+        "index": 0
+      },
+      "bomb": {
+        "kind": "button",
+        "index": 2
+      },
+      "portal": {
+        "kind": "button",
+        "index": 3
+      },
+      "pause": {
+        "kind": "button",
+        "index": 9
+      },
+      "back": {
+        "kind": "button",
+        "index": 1
+      }
+    }
   },
   "droppedSeconds": 0,
   "audioError": null

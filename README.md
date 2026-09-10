@@ -51,16 +51,46 @@ La bomba carga 0.25 s, destruye amenazas activas dentro de la vista al pulsarla 
 | Silenciar / reiniciar | M / R durante la partida | Opciones del menú de pausa |
 | Diagnóstico | F3 | — |
 
-Menús con ratón, teclado y mando, foco visible y repetición controlada del stick. Las ayudas cambian al detectar joypad. Pulsa un botón si el navegador aún no lo detecta. Se admite el mapeo `standard` de Gamepad API; reasignación y mandos propietarios quedan pendientes.
+Menús con ratón, teclado y mando, foco visible y repetición controlada del stick. Las ayudas cambian al detectar joypad. Pulsa un botón si el navegador aún no lo detecta. Se admiten mandos estándar y USB con mapeo original, incluida cruceta reportada como eje hat. Cada dispositivo puede guardar su distribución de direcciones y botones.
 
 Pausa automática al perder foco, cambiar de pestaña o desconectar el joypad detectado. Volumen, silencio y reducción de movimiento/destellos persisten localmente. Audio tras interacción de inicio/reanudación; algunos navegadores pueden exigir un clic/tecla para desbloquearlo.
+
+## Mando USB y calibración
+
+1. Haz clic en el juego y pulsa un botón del mando. Su nombre debe aparecer bajo **CONFIGURAR MANDO USB**, disponible en título y pausa.
+2. Abre ese panel. Los ejes cambian de valor y los botones se iluminan; «Última señal» conserva el último control recibido.
+3. Si las acciones no coinciden, suelta todos los controles y pulsa **CALIBRAR DIRECCIONES Y BOTONES**. Sigue las nueve indicaciones: izquierda, derecha, arriba, abajo, disparar/confirmar, bomba, portal, pausa/iniciar y volver. Suelta el control entre pasos.
+4. El perfil se guarda localmente por modelo de mando. **LISTO / VOLVER** regresa al juego. **Restablecer** recupera el perfil inicial; cancelar conserva el perfil anterior.
+
+Corrección: la versión anterior filtraba `mapping === 'standard'` y descartaba este USB. La [especificación de Gamepad](https://www.w3.org/TR/gamepad/) permite mapeo vacío para dispositivos originales y exige interacción para exponerlos. Ahora un bloqueo de la API se muestra en pantalla sin detener el juego. Si el panel no recibe señal, abrir la dirección del juego directamente en Chrome/Edge; el código no puede instalar controladores ni superar un bloqueo del navegador.
+
+Verificación física del 2026-09-09: `USB Joystick (Vendor: 0079 Product: 0006)`, 12 botones, 10 ejes, mapeo original; eje hat con neutro fuera de [-1,1]. El usuario confirmó que números y botones responden. No se instaló ningún controlador externo.
+
+## Dificultad y ritmo
+
+| Nivel | Velocidad del juego |
+| --- | --- |
+| Relajado | 0.8× |
+| Normal | 1× |
+| Difícil | 1.25× |
+| Experto | 1.5× |
+
+Selector en título y pausa, con teclado, ratón o izquierda/derecha del mando sobre la opción. Se guarda y se aplica al reanudar, sin reiniciar. Escala nave, enemigos, disparos, caída, recargas y apariciones. Se conserva el paso fijo de 1/60; el nivel cambia cuántos pasos se ejecutan por segundo real. El tiempo del resumen es tiempo de simulación. No modifica daño, puntuación o número de enemigos.
+
+## Audio y explosiones
+
+Disparos con pulso agudo, golpe grave y ataque de ruido; impactos con ruido filtrado y resonancia; explosiones con transitorio, subgrave, cola de ruido y fragmentación metálica. Variación determinista, panorámica, límite de voces, compresor y saturación suave final. Se mantienen silencio y volumen.
+
+Destrucciones con núcleo brillante breve, chispas alargadas, fragmentos giratorios y nube caliente que se disipa. Las partículas continúan disipándose detrás del resumen, pero se congelan en pausa. La opción de reducir efectos baja cantidad/intensidad y elimina las nubes; conserva la información del impacto.
+
+La prueba offline usa diez explosiones/bombas superpuestas y seis disparos a 48 kHz estéreo: pico ~0.623, RMS ~0.081, sin muestras no finitas ni valores fuera de [-1,1]. Evidencia en `*-audio-mix.json`. No sustituye la escucha humana.
 
 ## Arquitectura y decisiones
 
 - `src/core/`: reloj de 60 Hz, semilla y operaciones circulares.
 - `src/game/combat/`: colonos, IA, colisiones, daños, vidas, oleada y escenarios separados del render.
 - `src/input/`: acciones centralizadas, zona muerta y navegación.
-- `src/render/`: modelos originales, cámara continua y TSL en propulsores, portal, impactos y bomba. Pool de 160 partículas y hasta 12 ondas.
+- `src/render/`: modelos originales, cámara continua y TSL en propulsores, portal, impactos y bomba. Pools de 768 chispas, 128 fragmentos, 96 nubes luminosas y 160 partículas auxiliares; ondas y núcleos TSL.
 - `src/audio/`: efectos Web Audio diferenciados, panorámica circular, límite de voces y compresor maestro.
 - `src/ui/`: radar, avisos, instrumentos y resumen; `src/app/`: coordinación y diagnóstico.
 
@@ -90,12 +120,12 @@ Playwright inicia/reutiliza desarrollo con un solo worker. `npm run test:e2e:hea
 
 Resultados del incremento de combate, 2026-09-09:
 
-- TypeScript estricto y build aprobados. Aviso de tamaño: ~940 kB JS / ~264 kB gzip, principalmente Three.js.
-- 31 pruebas Vitest aprobadas: reservas, captura/mutación, liberación, caída suave/mortal, rescate/entrega, daño único, costura, bomba, portal, vidas, finales y determinismo.
-- 24 pruebas Playwright aprobadas (12 WebGPU y 12 WebGL2), sin errores de consola o excepciones de página observados.
+- TypeScript estricto y build aprobados. Aviso de tamaño: ~958 kB JS / ~269 kB gzip, principalmente Three.js.
+- 42 pruebas Vitest aprobadas: reservas, captura/mutación, liberación, caída suave/mortal, rescate/entrega, daño único, costura, bomba, portal, vidas, finales y determinismo.
+- 32 pruebas Playwright aprobadas (16 WebGPU y 16 WebGL2), sin errores de consola o excepciones de página observados.
 - Build de producción comprobado con WebGPU y WebGL2, sin errores observados.
 - Oleada principal desde título hasta victoria con eventos de teclado, sin modificar la simulación. El piloto de pruebas lee estado para decidir acciones normales. Nueve apariciones eliminadas, ocho colonos supervivientes; el rescate se comprueba además en otro recorrido de abducción → bomba → caída → recogida → entrega.
-- Joypad emulado: vuelo, disparo, pausa, menús, volumen, silencio, reducción de efectos, bomba, portal, resumen, inicio y desconexión. No sustituye un mando físico.
+- Joypad emulado estándar y USB original: vuelo, disparo, pausa, menús, volumen, silencio, dificultad, reducción de efectos, bomba, portal, resumen, inicio, desconexión y calibración con persistencia. Mando físico detectado y recepción de ejes/botones confirmada por el usuario.
 
 ## Capturas y rendimiento
 
@@ -109,6 +139,9 @@ Pares `chromium-auto-*` y `chromium-webgl2-*` en `docs/screenshots/`:
 | `enemy-families.png`, `effects.png` | Familias, portal y combate de diagnóstico |
 | `combat-metrics.json`, `showcase-metrics.json` | Entidades, rendimiento y backend |
 | `720p.png`, `seam.png` | Adaptación y costura |
+| `usb-calibrated.png` | Asignación y guardado del mando USB emulado |
+| `explosion-upgrade.png`, `player-explosion.png` | Bomba y destrucción propia con nuevos efectos |
+| `explosion-metrics.json`, `audio-mix.json` | Carga de partículas y señal de audio medida |
 
 Windows, NVIDIA GeForce RTX 3060, controlador 32.0.16.1088, Chromium 151, 1920×1080/DPR 1. Ventana móvil de hasta 180 cuadros tras 240 pasos. Escena inicial de combate: alrededor de 60 FPS; cada JSON identifica su carga. `combat-showcase` concentra cinco familias para revisión: no es una prueba de estrés máximo ni sustituye la oleada principal.
 
@@ -116,10 +149,12 @@ Windows, NVIDIA GeForce RTX 3060, controlador 32.0.16.1088, Chromium 151, 1920×
 | --- | --- | --- | --- | --- |
 | Inicio de combate / WebGPU | 60.01 | 16.66 | 52 | 18 663 |
 | Inicio de combate / WebGL2 | 60.01 | 16.66 | 52 | 18 663 |
-| Combate de diagnóstico / WebGPU | 60.01 | 16.66 | 86 | 22 267 |
-| Combate de diagnóstico / WebGL2 | 60.01 | 16.66 | 86 | 22 267 |
+| Combate de diagnóstico / WebGPU | 60.01 | 16.66 | 92 | 22 495 |
+| Combate de diagnóstico / WebGL2 | 60.01 | 16.66 | 92 | 22 495 |
 
-La segunda muestra contiene tres enemigos activos, siete colonos, cinco proyectiles y dieciocho partículas tras disparar durante cuatro segundos. No hubo tiempo de simulación descartado en estas muestras. El incremento de vuelo conservado en Git contiene la verificación inicial de referencias SHA-256 contra el ZIP original; siguen sin modificaciones.
+La segunda muestra contiene tres enemigos activos, siete colonos, cinco proyectiles y 104 partículas tras disparar durante cuatro segundos. No hubo tiempo de simulación descartado en estas muestras. El incremento de vuelo conservado en Git contiene la verificación inicial de referencias SHA-256 contra el ZIP original; siguen sin modificaciones.
+
+La captura de bomba reúne más de 500 partículas, ~110 draw calls y ~24 700 triángulos. Esa muestra inicial incluye compilación de materiales y es más corta que la ventana estable: consultar su FPS real en `*-explosion-metrics.json`, sin extrapolar 60 FPS constantes durante todo arranque.
 
 ## Diagnóstico de desarrollo
 
@@ -140,6 +175,6 @@ Escenarios: `combat-basic`, `abduction-start`, `falling-colonist`, `portal-ready
 
 ## Límites pendientes
 
-Ciclo jugable solicitado implementado. Falta joypad físico, evaluación humana del balance/inercia y escucha del audio para valorar mezcla y clipping audible. Limitar voces y comprimir no certifica calidad perceptual.
+Mando físico USB Joystick 0079:0006 detectado en Windows y en el navegador integrado; el usuario confirmó cambios de ejes y botones en el panel. Calibración, persistencia y juego con controles asignados se prueban además por emulación. Falta evaluar una partida completa con el mando físico y escuchar la mezcla en altavoces/auriculares. La medición offline de picos no certifica calidad perceptual.
 
 Modelos procedurales de baja complejidad, aún sin alcanzar la dirección artística realista final. Se revisaron composición y legibilidad en capturas sin dar por cerrado el pulido visual del Milestone 1. Sin más oleadas, campaña, guardado de partida ni música. `PLAN.md` conserva el historial y `ACCEPTANCE_CRITERIA.md` detalla la revisión.

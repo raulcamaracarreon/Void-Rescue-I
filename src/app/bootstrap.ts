@@ -1,6 +1,7 @@
 import { GameApp } from './GameApp';
 import '../ui/style.css';
 import '../ui/combat.css';
+import '../ui/settings.css';
 
 const canvas = document.querySelector<HTMLCanvasElement>('#game');
 const ui = document.querySelector<HTMLElement>('#ui');

@@ -2,7 +2,7 @@
 
 Codex no debe declarar terminado el vertical jugable hasta comprobar estos criterios o documentar claramente los que el entorno impidió verificar.
 
-Revisión 2026-09-09: ciclo de combate, colonos, rescate y oleada implementado y verificado con teclado y joypad emulado. Casillas visuales comprobadas en capturas de las escenas descritas en README, sin afirmar una prueba de estrés máximo. Pendientes: acabado artístico realista, evaluación humana del balance, mando físico y escucha del audio; no se declara cerrado el acabado completo del Milestone 1.
+Revisión 2026-09-09: ciclo de combate, colonos, rescate y oleada implementado y verificado con teclado y joypad emulado. Casillas visuales comprobadas en capturas de las escenas descritas en README, sin afirmar una prueba de estrés máximo. Pendientes: acabado artístico realista, evaluación humana del balance, evaluación de una partida completa con mando físico y escucha del audio; no se declara cerrado el acabado completo del Milestone 1.
 
 ## A. Arranque y compatibilidad
 
@@ -62,13 +62,13 @@ Revisión 2026-09-09: ciclo de combate, colonos, rescate y oleada implementado y
 
 - [x] El audio comienza sólo después de interacción del usuario.
 - [x] Motor, disparo, impacto, explosión, alerta, rescate, bomba y portal poseen sonidos originales diferenciados.
-- [ ] No hay clipping audible evidente en combate normal (pendiente escucha humana; límite de voces y compresor implementados).
+- [ ] No hay clipping audible evidente en combate normal (pendiente escucha humana; límite de voces, compresor y saturación suave implementados; mezcla offline medida sin sobrepasar ±1).
 - [x] Silenciar funciona y persiste durante la sesión.
 
 ## G. Pruebas y diagnóstico
 
-- [x] Las pruebas Vitest pasan (31 pruebas de núcleo, vuelo, combate y rescate).
-- [x] Las pruebas Playwright pasan en Chromium (24 recorridos: 12 WebGPU y 12 WebGL2).
+- [x] Las pruebas Vitest pasan (42 pruebas de núcleo, vuelo, combate, rescate, mando y dificultad).
+- [x] Las pruebas Playwright pasan en Chromium (32 recorridos: 16 WebGPU y 16 WebGL2).
 - [x] `window.__VOID_RESCUE__` expone estado, escenarios y métricas (diez escenarios, incluidos los seis obligatorios).
 - [x] Los seis escenarios deterministas requeridos cargan correctamente.
 - [x] Al menos una prueba usa controles reales y no sólo mutación directa del estado.

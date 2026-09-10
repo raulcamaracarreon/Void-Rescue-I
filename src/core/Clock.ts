@@ -3,10 +3,10 @@ export class FixedClock {
   private accumulator = 0;
   droppedSeconds = 0;
 
-  advance(elapsed: number, update: (dt: number) => void): number {
+  advance(elapsed: number, update: (dt: number) => void, speed = 1): number {
     const clamped = Math.max(0, Math.min(elapsed, 0.1));
     this.droppedSeconds += Math.max(0, elapsed - clamped);
-    this.accumulator += clamped;
+    this.accumulator += clamped * speed;
     while (this.accumulator + 1e-10 >= this.dt) {
       update(this.dt);
       this.accumulator -= this.dt;

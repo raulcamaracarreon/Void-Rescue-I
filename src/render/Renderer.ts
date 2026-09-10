@@ -109,7 +109,7 @@ export class FlightRenderer {
     if (!title) this.rig.update(playerX, p.vx, p.facing, elapsed, reducedMotion);
     this.camera.position.x = this.rig.x;
     this.world.update(this.rig.x, this.viewWidth);
-    this.combat.update(state, this.rig.x, this.viewWidth, reducedMotion);
+    this.combat.update(state, this.rig.x, this.viewWidth, reducedMotion, elapsed);
     this.ship.group.visible = p.alive || title;
     if (!reducedMotion) {
       const impact = state.events.find(e => ['player-hit', 'bomb'].includes(e.kind) && state.time - e.time < 0.45);

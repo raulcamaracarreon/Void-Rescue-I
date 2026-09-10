@@ -133,3 +133,19 @@ Salida final: vertical jugable, pruebas, capturas e informe honesto de limitacio
 - Recursos glTF elaborados en Blender.
 - Música adaptativa.
 - Publicación y despliegue.
+
+## Incremento autorizado — mando USB, dificultad y efectos (2026-09-09)
+
+- Corregir el filtro que descartaba mapping vacío. Windows detecta mando HID VID_0079/PID_0006. Aceptar entrada original, mostrar ejes/botones en vivo, elegir dispositivo y calibrar direcciones/acciones; guardar perfil por identificador localmente. Gestionar bloqueo de Gamepad API sin romper la partida.
+- Dificultad visible en título y pausa: Relajado 0.8×, Normal 1×, Difícil 1.25×, Experto 1.5×. Escalar ritmo global manteniendo pasos fijos de 1/60; afecta nave, enemigos, proyectiles, caídas y apariciones. Aplicación inmediata al reanudar, sin reiniciar partida. HUD muestra nivel.
+- Sonidos de combate por capas de ruido filtrado, golpe grave y cola, con mezcla limitada; explosiones con núcleo suave, chispas, fragmentos y ondas TSL en pools, respetando reducción de efectos.
+- Verificar mando no estándar y calibración/persistencia, dificultad, recorridos anteriores, picos de audio medidos y capturas de explosiones en ambos backends. La interacción física requiere señales del mando; no confundir emulación con prueba física.
+
+Resultado de este incremento:
+
+- Mando USB físico 0079:0006 observado en Windows y en el navegador integrado: 12 botones, 10 ejes, mapping vacío. El usuario confirmó que el panel responde al mover/pulsar controles. Calibración y partida con distribución asignada comprobadas además mediante emulación; no afirmar una oleada completa física.
+- 42 pruebas unitarias aprobadas y suite completa de 32 E2E aprobada en Chromium 151, ambos backends. Se vuelven a comprobar los doce recorridos de mando/dificultad/efectos tras la corrección final de toques breves y ayudas con numeración real.
+- Ritmo 0.8× / 1× / 1.25× / 1.5× verificado con reloj fijo y tiempo real del navegador. Persistencia y ajustes con mando comprobados.
+- Sonidos por capas y mezcla offline estéreo a 48 kHz verificada: pico ~0.623, RMS ~0.081 para explosiones superpuestas; pendiente escucha humana.
+- Capturas revisadas de título, calibración USB, explosiones múltiples y destrucción propia. Escena estable de combate: ~60 FPS, 92 draw calls / 22 495 triángulos, 104 partículas. La captura inicial de bomba tiene >500 partículas y 110 draw calls; su FPS incluye arranque de materiales.
+- Sin nuevas dependencias ni cambios en referencias. Build con aviso de tamaño (~958 kB JS / ~269 kB gzip).

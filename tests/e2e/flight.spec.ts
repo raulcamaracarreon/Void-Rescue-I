@@ -7,6 +7,7 @@ const output = 'docs/screenshots';
 async function state(page: Page) { return page.evaluate(() => window.__VOID_RESCUE__!.getState()); }
 
 test.beforeEach(async ({ page }, info) => {
+  await page.addInitScript(() => Object.defineProperty(navigator, 'getGamepads', { configurable: true, value: () => [] }));
   const errors: string[] = [];
   page.on('pageerror', error => errors.push(error.message));
   page.on('console', message => { if (message.type() === 'error') errors.push(message.text()); });
@@ -72,7 +73,7 @@ test('pausa real, preferencias, reinicio y regreso al menú', async ({ page }) =
   await page.getByRole('checkbox', { name: 'Silenciar audio', exact: true }).check();
   await page.getByLabel('Reducir movimiento y destellos').check();
   await page.getByLabel('Volumen', { exact: true }).fill('25');
-  expect((await state(page)).preferences).toEqual({ muted: true, volume: 0.25, reducedMotion: true });
+  expect((await state(page)).preferences).toMatchObject({ muted: true, volume: 0.25, reducedMotion: true });
   await page.getByRole('button', { name: /CONTINUAR VUELO/ }).click();
   await expect.poll(async () => (await state(page)).frame).toBeGreaterThan(paused.frame);
   await page.keyboard.press('KeyR');
@@ -88,7 +89,7 @@ test('pausa real, preferencias, reinicio y regreso al menú', async ({ page }) =
   await expect(page.getByRole('heading', { name: /VOID/ })).toBeVisible();
   await page.reload();
   await page.waitForFunction(() => Boolean(window.__VOID_RESCUE__));
-  expect((await state(page)).preferences).toEqual({ muted: true, volume: 0.25, reducedMotion: true });
+  expect((await state(page)).preferences).toMatchObject({ muted: true, volume: 0.25, reducedMotion: true });
 });
 
 test('costura circular con controles reales y radar dividido', async ({ page }, info) => {

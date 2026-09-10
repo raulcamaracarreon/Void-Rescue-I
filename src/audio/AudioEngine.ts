@@ -1,6 +1,7 @@
 import type { GameEvent } from '../game/combat/types';
 import { signedWrappedDeltaX } from '../core/WorldWrap';
 import { CONFIG } from '../game/config';
+import { CombatSound, masterBus } from './CombatSound';
 
 export class AudioEngine {
   private context: AudioContext | null = null;
@@ -11,15 +12,13 @@ export class AudioEngine {
   volume = 0.45;
   private lastEventId = 0;
   private voices = 0;
+  private combat: CombatSound | null = null;
 
   async unlock(): Promise<void> {
     if (!this.context) {
       const context = this.context = new AudioContext();
-      const master = this.master = context.createGain();
-      const compressor = context.createDynamicsCompressor();
-      compressor.threshold.value = -16;
-      compressor.ratio.value = 8;
-      master.connect(compressor).connect(context.destination);
+      const master = this.master = masterBus(context, context.destination);
+      this.combat = new CombatSound(context, master);
       const engine = this.engine = context.createOscillator();
       engine.type = 'sawtooth';
       const filter = context.createBiquadFilter();
@@ -49,19 +48,8 @@ export class AudioEngine {
   }
 
   pulse(): void {
-    if (!this.context || !this.master || this.muted) return;
-    const now = this.context.currentTime;
-    const oscillator = this.context.createOscillator();
-    const gain = this.context.createGain();
-    oscillator.type = 'triangle';
-    oscillator.frequency.setValueAtTime(740, now);
-    oscillator.frequency.exponentialRampToValueAtTime(95, now + 0.11);
-    gain.gain.setValueAtTime(0.1, now);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
-    oscillator.connect(gain).connect(this.master);
-    oscillator.start(now);
-    oscillator.stop(now + 0.13);
-    oscillator.onended = () => { oscillator.disconnect(); gain.disconnect(); };
+    if (!this.combat || this.context?.state !== 'running' || this.muted || this.voices >= 12) return;
+    this.voices++; this.combat.play('shot', 0, 0, () => this.voices--);
   }
 
   resetEvents(): void { this.lastEventId = 0; }
@@ -70,7 +58,12 @@ export class AudioEngine {
     for (const event of events) {
       if (event.id <= this.lastEventId) continue;
       this.lastEventId = event.id;
-      if (!this.context || !this.master || this.muted || this.voices >= 16) continue;
+      if (!this.context || this.context.state !== 'running' || !this.master || this.muted || this.voices >= 16) continue;
+      if (this.combat && (event.kind === 'impact' || event.kind === 'explosion' || event.kind === 'player-hit' || event.kind === 'bomb')) {
+        this.voices++;
+        this.combat.play(event.kind, signedWrappedDeltaX(playerX, event.x, CONFIG.worldWidth) / 110, event.id, () => this.voices--);
+        continue;
+      }
       const frequencies: Record<GameEvent['kind'], [number, number, number, OscillatorType]> = {
         spawn: [190, 270, 0.18, 'sine'], capture: [850, 480, 0.35, 'triangle'],
         falling: [980, 250, 0.45, 'triangle'], landing: [390, 540, 0.2, 'sine'],

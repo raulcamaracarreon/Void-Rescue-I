@@ -8,9 +8,11 @@ import { FlightRenderer } from '../render/Renderer';
 import { AudioEngine } from '../audio/AudioEngine';
 import { Interface } from '../ui/Interface';
 import type { AppMode, Preferences } from '../ui/Interface';
+import { ControllerPanel } from '../ui/ControllerPanel';
+import { DIFFICULTIES, difficulty } from '../game/Difficulty';
 
 function readPreferences(): Preferences {
-  const defaults = { muted: false, volume: 0.45, reducedMotion: matchMedia('(prefers-reduced-motion: reduce)').matches };
+  const defaults: Preferences = { muted: false, volume: 0.45, reducedMotion: matchMedia('(prefers-reduced-motion: reduce)').matches, difficulty: 'normal' };
   try {
     const data: unknown = JSON.parse(localStorage.getItem('void-rescue.preferences') ?? '{}');
     if (typeof data !== 'object' || !data) return defaults;
@@ -19,6 +21,7 @@ function readPreferences(): Preferences {
       muted: typeof value.muted === 'boolean' ? value.muted : defaults.muted,
       reducedMotion: typeof value.reducedMotion === 'boolean' ? value.reducedMotion : defaults.reducedMotion,
       volume: typeof value.volume === 'number' && Number.isFinite(value.volume) ? Math.max(0, Math.min(1, value.volume)) : defaults.volume,
+      difficulty: difficulty(value.difficulty),
     };
   } catch { return defaults; }
 }
@@ -30,6 +33,7 @@ export class GameApp {
   private readonly audio = new AudioEngine();
   private readonly graphics: FlightRenderer;
   private readonly ui: Interface;
+  private readonly controllerPanel: ControllerPanel;
   private mode: AppMode = 'title';
   private preferences = readPreferences();
   private previousTime = 0;
@@ -51,7 +55,9 @@ export class GameApp {
       start: () => this.start(), resume: () => this.setPaused(false), restart: () => this.restart(),
       menu: () => this.menu(), pause: () => this.setPaused(true), mute: () => this.toggleMute(),
       fullscreen: () => { void this.fullscreen(); }, preferences: value => this.savePreferences(value),
+      controller: () => { this.setPaused(true); this.controllerPanel.show(); },
     }, this.preferences);
+    this.controllerPanel = new ControllerPanel(root, this.input.controller, () => { this.input.clear(); });
     this.audio.setMuted(this.preferences.muted);
     this.audio.setVolume(this.preferences.volume);
     window.addEventListener('blur', this.onBlur);
@@ -74,9 +80,12 @@ export class GameApp {
     const elapsed = this.previousTime ? Math.max(0, (now - this.previousTime) / 1000) : 1 / 60;
     this.previousTime = now;
     this.input.poll();
+    this.controllerPanel.update();
     if (this.input.disconnected && this.mode === 'playing') { this.setPaused(true); this.ui.disconnected(); }
     const menuInput = this.input.menu();
-    if (this.input.consume('pause')) {
+    if (this.controllerPanel.open) {
+      this.input.consume('pause'); this.controllerPanel.navigate(menuInput);
+    } else if (this.input.consume('pause')) {
       if (this.mode === 'title') this.start(); else if (this.mode === 'result') this.restart(); else this.setPaused(this.mode === 'playing');
     } else if (this.mode !== 'playing') {
       this.ui.navigatePad(menuInput);
@@ -87,12 +96,13 @@ export class GameApp {
 
     let alpha = 0;
     if (this.mode === 'playing') {
-      const input = { ...this.input.flight(), view: { centerX: this.graphics.rig.x, width: this.graphics.viewWidth } };
       alpha = this.clock.advance(elapsed, dt => {
+        // Consume one-shot actions only when a simulation step actually runs.
+        const input = { ...this.input.flight(), view: { centerX: this.graphics.rig.x, width: this.graphics.viewWidth } };
         const before = this.simulation.state.shotsFired;
         this.simulation.update(dt, input);
         if (this.simulation.state.shotsFired > before) this.audio.pulse();
-      });
+      }, DIFFICULTIES[this.preferences.difficulty].speed);
     } else this.clock.reset();
     const state = this.simulation.state;
     const teleport = state.events.find(e => e.id > this.lastTeleport && (e.kind === 'portal' || e.kind === 'respawn'));
@@ -102,7 +112,7 @@ export class GameApp {
     this.audio.update(state.player.thrust, Math.abs(state.player.vx), this.mode === 'playing' && state.player.alive);
     try {
       this.graphics.draw(state, alpha, elapsed, this.mode === 'playing', this.mode === 'title', this.preferences.reducedMotion);
-      this.ui.update(state, this.graphics.metrics(), this.input.gamepadConnected);
+      this.ui.update(state, this.graphics.metrics(), this.input.gamepadConnected, this.preferences.difficulty, this.input.controller.labels());
     } catch (error) {
       this.showError(error);
       return;
@@ -202,7 +212,8 @@ export class GameApp {
           particles: this.graphics.combat.particleCount },
         wave: { outcome: this.simulation.state.outcome, score: this.simulation.state.score, delivered: this.simulation.state.delivered,
           remainingSpawns: this.simulation.state.schedule.length - this.simulation.state.spawnIndex },
-        droppedSeconds: this.clock.droppedSeconds, audioError: this.audioError }),
+        difficulty: this.preferences.difficulty, speed: DIFFICULTIES[this.preferences.difficulty].speed,
+        controller: this.input.controller.snapshot(), droppedSeconds: this.clock.droppedSeconds, audioError: this.audioError }),
       restart: () => this.restart(),
       listScenarios: () => [...SCENARIOS],
     });

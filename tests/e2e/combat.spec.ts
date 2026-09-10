@@ -7,6 +7,7 @@ const output = 'docs/screenshots';
 const getState = (page: Page) => page.evaluate(() => window.__VOID_RESCUE__!.getState());
 
 test.beforeEach(async ({ page }, info) => {
+  await page.addInitScript(() => Object.defineProperty(navigator, 'getGamepads', { configurable: true, value: () => [] }));
   const errors: string[] = [];
   page.on('pageerror', error => errors.push(error.message));
   page.on('console', message => { if (message.type() === 'error') errors.push(message.text()); });
@@ -128,7 +129,7 @@ test('joypad navega opciones, ajusta volumen, usa bomba/portal y vuelve desde re
     Object.defineProperty(navigator, 'getGamepads', { configurable: true, value: () => [p] });
   });
   await pad(page, 9); await pad(page, null);
-  await expect(page.locator('.pause-dialog:not(.result-dialog)')).toBeVisible();
+  await expect(page.getByRole('dialog', { name: /Vuelo en pausa/ })).toBeVisible();
   await pad(page, null, 1, 0); await pad(page, null);
   expect((await getState(page)).preferences.volume).toBe(0.5);
   await pad(page, null, 0, 1); await pad(page, null); // mute

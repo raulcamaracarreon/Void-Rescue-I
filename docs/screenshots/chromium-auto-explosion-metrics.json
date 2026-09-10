@@ -1,45 +1,69 @@
 {
-  "backend": "webgl2",
-  "fps": 60.01600426780478,
-  "frameMs": 16.662222222222212,
-  "drawCalls": 52,
-  "triangles": 18663,
-  "geometries": 73,
+  "backend": "webgpu",
+  "fps": 52.27492739593418,
+  "frameMs": 19.12962962962963,
+  "drawCalls": 110,
+  "triangles": 24703,
+  "geometries": 109,
   "textures": 3,
   "width": 1920,
   "height": 1080,
   "pixelRatio": 1,
-  "cameraX": 467.9007291177017,
+  "cameraX": 368.4745632317117,
   "viewWidth": 199.11111111111111,
   "seed": 8042,
-  "scenario": "combat-basic",
+  "scenario": "combat-showcase",
   "simulationHz": 60,
-  "frame": 251,
+  "frame": 30,
   "entities": {
     "player": 1,
-    "enemies": 1,
+    "enemies": 0,
     "colonists": 8,
     "projectiles": 0,
-    "particles": 0
+    "particles": 562
   },
   "wave": {
     "outcome": "active",
-    "score": 0,
-    "delivered": 0,
-    "remainingSpawns": 8
+    "score": 1150,
+    "delivered": 1,
+    "remainingSpawns": 0
   },
   "difficulty": "normal",
   "speed": 1,
   "controller": {
     "available": true,
     "error": "",
-    "id": null,
-    "mapping": null,
+    "id": "USB Joystick test 0079:0006",
+    "mapping": "",
     "calibrated": false,
     "calibrationStep": -1,
     "lastActivity": "Esperando que muevas o pulses un control",
-    "axes": [],
-    "buttons": [],
+    "axes": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      3.2857
+    ],
+    "buttons": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ],
     "profile": {
       "left": {
         "kind": "axis",
@@ -83,6 +107,6 @@
       }
     }
   },
-  "droppedSeconds": 0,
+  "droppedSeconds": 0.08299999999999999,
   "audioError": null
 }

@@ -9,6 +9,7 @@ import { nearCameraX } from '../core/WorldWrap';
 import { CONFIG } from '../game/config';
 import { colonistModel, enemyModel } from './models/CombatModels';
 import { emission } from './materials';
+import { DestructionEffects } from './DestructionEffects';
 
 export class CombatVisuals {
   readonly group = new Group();
@@ -25,8 +26,11 @@ export class CombatVisuals {
   private readonly rings: Mesh[] = [];
   private readonly effectTime = uniform(0);
   particleCount = 0;
+  private readonly destruction = new DestructionEffects();
+  private presentationTime = 0;
 
   constructor() {
+    this.group.add(this.destruction.group);
     for (const kind of ['harvester', 'wraith', 'interceptor', 'flux', 'drone'] as const) this.templates.set(kind, enemyModel(kind));
     for (let i = 0; i < 3; i++) {
       const ring = new Mesh(new TorusGeometry(7 - i * 0.5, 0.22, 8, 48), emission(i === 1 ? 0xb590ff : 0x98f6eb));
@@ -51,9 +55,10 @@ export class CombatVisuals {
     }
   }
 
-  update(state: FlightState, cameraX: number, width: number, reduced: boolean): void {
+  update(state: FlightState, cameraX: number, width: number, reduced: boolean, elapsed = 0): void {
     this.group.visible = state.enabled;
     if (!state.enabled) return;
+    this.presentationTime = state.outcome === 'active' ? state.time : Math.max(state.time, this.presentationTime) + elapsed;
     this.effectTime.value = reduced ? 0 : state.time;
     const x = (worldX: number) => nearCameraX(worldX, cameraX, CONFIG.worldWidth);
     const visible = (worldX: number) => Math.abs(x(worldX) - cameraX) < width / 2 + 20;
@@ -96,24 +101,26 @@ export class CombatVisuals {
     this.shield.visible = state.player.alive && state.player.invulnerable > 0;
     this.shield.position.set(x(state.player.x), state.player.y, 1);
     this.effects(state, cameraX, reduced);
+    this.destruction.update(state.events, this.presentationTime, cameraX, width, reduced);
+    this.particleCount += this.destruction.count;
   }
 
   private effects(state: FlightState, cameraX: number, reduced: boolean): void {
     let count = 0, ringIndex = 0;
     this.rings.forEach(ring => { ring.visible = false; });
     for (const event of state.events) {
-      const age = state.time - event.time;
+      const age = this.presentationTime - event.time;
       if (age < 0 || age > 1.1) continue;
       const locationX = nearCameraX(event.x, cameraX, CONFIG.worldWidth);
       const tint = new Color(this.eventColor(event));
-      if (['bomb', 'bomb-charge', 'portal', 'rescue', 'delivery', 'mutation', 'spawn', 'impact'].includes(event.kind) && ringIndex < this.rings.length) {
+      if (['bomb', 'bomb-charge', 'portal', 'rescue', 'delivery', 'mutation', 'spawn', 'impact', 'explosion', 'player-hit'].includes(event.kind) && ringIndex < this.rings.length) {
         const ring = this.rings[ringIndex++]!;
         const size = event.kind === 'bomb' ? 4 + age * 130 : event.kind === 'bomb-charge' ? 4 - age * 8 : event.kind === 'impact' ? 0.4 + age * 3 : 2 + age * 9;
         ring.visible = size > 0; ring.position.set(locationX, event.y, 13); ring.scale.setScalar(Math.max(0.01, size));
         const material = ring.material as MeshBasicNodeMaterial;
         material.color.copy(tint); material.opacity = (1 - age / 1.1) * (reduced ? 0.18 : 0.45);
       }
-      if (['explosion', 'player-hit', 'impact', 'lost', 'mutation'].includes(event.kind)) {
+      if (['lost', 'mutation'].includes(event.kind)) {
         const amount = reduced ? 4 : event.kind === 'impact' ? 4 : 14;
         for (let i = 0; i < amount && count < 160; i++) {
           const angle = (i / amount * Math.PI * 2) + event.id * 0.37;

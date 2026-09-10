@@ -1,6 +1,7 @@
 import type { FlightInput } from '../game/Simulation';
 import { BINDINGS, GAMEPAD } from './bindings';
 import type { Action } from './bindings';
+import { Controller } from './Controller';
 
 export interface GamepadSnapshot {
   axes: readonly number[];
@@ -26,11 +27,14 @@ export function readGamepad(pad: GamepadSnapshot | null): FlightInput & { pause:
 }
 
 export class InputManager {
+  readonly controller = new Controller();
   private readonly keys = new Set<string>();
   private readonly pressed = new Set<Action>();
   private previousPadPause = false;
   private previousPadConfirm = false;
   private previousPadBack = false;
+  private previousPadBomb = false;
+  private previousPadPortal = false;
   private navX = 0;
   private navY = 0;
   private nextNavTime = 0;
@@ -62,13 +66,17 @@ export class InputManager {
   private onKeyUp = (event: KeyboardEvent): void => { this.keys.delete(event.code); };
 
   poll(): void {
-    const pad = Array.from(navigator.getGamepads?.() ?? []).find(p => p?.connected && p.mapping === 'standard') ?? null;
+    const controls = this.controller.poll();
+    const pad = this.controller.active;
     this.disconnected = this.gamepadConnected && pad === null;
     this.gamepadConnected = pad !== null;
-    this.padFlight = readGamepad(pad);
+    this.padFlight = controls;
     if (this.padFlight.pause && !this.previousPadPause) this.pressed.add('pause');
     this.previousPadPause = this.padFlight.pause;
-    if (this.padFlight.fire && !this.previousPadConfirm) this.pressed.add('confirm');
+    if (this.padFlight.fire && !this.previousPadConfirm) { this.pressed.add('confirm'); this.pressed.add('fire'); }
+    if (this.padFlight.bomb && !this.previousPadBomb) this.pressed.add('bomb');
+    if (this.padFlight.portal && !this.previousPadPortal) this.pressed.add('portal');
+    this.previousPadBomb = Boolean(this.padFlight.bomb); this.previousPadPortal = Boolean(this.padFlight.portal);
     if (this.padFlight.back && !this.previousPadBack) this.pressed.add('back');
     this.previousPadConfirm = this.padFlight.fire; this.previousPadBack = this.padFlight.back;
     const x = Math.abs(this.padFlight.x) > 0.55 ? Math.sign(this.padFlight.x) : 0;
@@ -92,7 +100,7 @@ export class InputManager {
     const held = (action: Action) => BINDINGS[action].some(code => this.keys.has(code));
     const keyboardX = Number(held('right')) - Number(held('left'));
     const keyboardY = Number(held('up')) - Number(held('down'));
-    return { x: keyboardX || this.padFlight.x, y: keyboardY || this.padFlight.y, fire: held('fire') || this.padFlight.fire,
+    return { x: keyboardX || this.padFlight.x, y: keyboardY || this.padFlight.y, fire: this.consume('fire') || held('fire') || this.padFlight.fire,
       bomb: this.consume('bomb') || held('bomb') || this.padFlight.bomb,
       portal: this.consume('portal') || held('portal') || this.padFlight.portal };
   }

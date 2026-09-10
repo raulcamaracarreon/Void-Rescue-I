@@ -5,12 +5,14 @@ import type { GameEvent } from '../game/combat/types';
 import type { FlightState } from '../game/Simulation';
 import type { RenderMetrics } from '../render/Renderer';
 import { Radar } from './Radar';
+import { DIFFICULTIES } from '../game/Difficulty';
+import type { Difficulty } from '../game/Difficulty';
 
 export type AppMode = 'title' | 'playing' | 'paused' | 'result';
-export interface Preferences { muted: boolean; volume: number; reducedMotion: boolean }
+export interface Preferences { muted: boolean; volume: number; reducedMotion: boolean; difficulty: Difficulty }
 export interface UiActions {
   start(): void; resume(): void; restart(): void; menu(): void; pause(): void;
-  mute(): void; fullscreen(): void; preferences(value: Preferences): void;
+  mute(): void; fullscreen(): void; controller(): void; preferences(value: Preferences): void;
 }
 
 export class Interface {
@@ -44,7 +46,9 @@ export class Interface {
           <h1 id="game-title">VOID<br><span>RESCUE</span><b>↗</b></h1>
           <p class="tagline">La colonia está lejos.<br>Tu nave es su primera respuesta.</p>
           <p class="title-description">Destruye a los abductores. Atrapa a los colonos en caída.<br>Desciende y frena para entregarlos. Elimina la oleada.</p>
+          <label class="difficulty-setting">DIFICULTAD <select aria-label="Dificultad" class="difficulty-select"></select></label>
           <button class="primary" data-action="start">INICIAR VUELO <span>↗</span></button>
+          <button class="controller-open text-button" data-action="controller">CONFIGURAR MANDO USB ↗</button><p class="controller-status"></p>
           <div class="title-controls"><span><kbd>W A S D</kbd> Pilotar</span><span><kbd>ESPACIO</kbd> Disparar</span><span><kbd>SHIFT</kbd> Bomba</span></div>
           <p class="gamepad-note">Joypad: sur A/× disparar y confirmar · oeste X/□ bomba · norte Y/△ portal<br>Stick/cruceta navegar · este B/○ volver · Start pausa</p>
         </div>
@@ -71,6 +75,8 @@ export class Interface {
         <label class="setting">Volumen <input id="volume" type="range" min="0" max="100" step="5" aria-label="Volumen"></label>
         <label class="setting">Silenciar audio <input id="muted" type="checkbox"></label>
         <label class="setting">Reducir movimiento y destellos <input id="reduced" type="checkbox"></label>
+        <label class="setting">Dificultad <select aria-label="Dificultad" class="difficulty-select"></select></label>
+        <button class="controller-open text-button" data-action="controller">CONFIGURAR MANDO USB ↗</button><p class="controller-status"></p>
         <button class="primary" data-action="resume">CONTINUAR VUELO <span>↗</span></button>
         <div class="pause-secondary"><button data-action="restart">Reiniciar vuelo</button><button data-action="menu">Volver al menú</button></div>
         <button class="text-button pause-fullscreen" data-action="fullscreen">PANTALLA COMPLETA ↗</button>
@@ -99,6 +105,15 @@ export class Interface {
     this.volume = get('#volume'); this.reduced = get('#reduced'); this.muteCheck = get('#muted');
     this.volume.value = String(preferences.volume * 100); this.reduced.checked = preferences.reducedMotion; this.muteCheck.checked = preferences.muted;
     this.syncMuted(preferences.muted);
+    const difficultySelects = [...root.querySelectorAll<HTMLSelectElement>('.difficulty-select')];
+    for (const select of difficultySelects) {
+      select.innerHTML = Object.entries(DIFFICULTIES).map(([id, item]) => `<option value="${id}">${item.label} · ${item.speed}×</option>`).join('');
+      select.value = preferences.difficulty;
+      select.addEventListener('change', () => {
+        difficultySelects.forEach(other => { other.value = select.value; });
+        actions.preferences({ volume: Number(this.volume.value) / 100, reducedMotion: this.reduced.checked, muted: this.muteCheck.checked, difficulty: select.value as Difficulty });
+      });
+    }
 
     root.querySelectorAll<HTMLButtonElement>('[data-action]').forEach(button => {
       button.addEventListener('click', () => {
@@ -109,7 +124,7 @@ export class Interface {
     this.pause.addEventListener('cancel', event => { event.preventDefault(); actions.resume(); });
     this.result.addEventListener('cancel', event => { event.preventDefault(); actions.menu(); });
     for (const input of [this.volume, this.reduced, this.muteCheck]) input.addEventListener('input', () => {
-      actions.preferences({ volume: Number(this.volume.value) / 100, reducedMotion: this.reduced.checked, muted: this.muteCheck.checked });
+      actions.preferences({ volume: Number(this.volume.value) / 100, reducedMotion: this.reduced.checked, muted: this.muteCheck.checked, difficulty: difficultySelects[0]!.value as Difficulty });
     });
   }
 
@@ -135,12 +150,15 @@ export class Interface {
   navigatePad(command: { x: number; y: number; confirm: boolean; back: boolean }): void {
     if (command.back) { if (this.lastMode === 'paused') this.actions.resume(); else if (this.lastMode === 'result') this.actions.menu(); return; }
     const scope = this.pause.open ? this.pause : this.result.open ? this.result : this.title;
-    const controls = [...scope.querySelectorAll<HTMLElement>('button, input')].filter(e => e.getBoundingClientRect().width > 0);
+    const controls = [...scope.querySelectorAll<HTMLElement>('button, input, select')].filter(e => e.getBoundingClientRect().width > 0);
     if (!controls.length) return;
     let index = controls.indexOf(document.activeElement as HTMLElement);
-    if (index < 0) index = 0;
+    if (index < 0) index = this.lastMode === 'title' ? Math.max(0, controls.findIndex(e => e.dataset.action === 'start')) : 0;
     let selected = controls[index]!;
-    if (command.x && selected instanceof HTMLInputElement && selected.type === 'range') {
+    if (command.x && selected instanceof HTMLSelectElement) {
+      selected.selectedIndex = Math.max(0, Math.min(selected.options.length - 1, selected.selectedIndex + command.x));
+      selected.dispatchEvent(new Event('change', { bubbles: true }));
+    } else if (command.x && selected instanceof HTMLInputElement && selected.type === 'range') {
       selected.value = String(Math.max(Number(selected.min), Math.min(Number(selected.max), Number(selected.value) + command.x * Number(selected.step))));
       selected.dispatchEvent(new Event('input', { bubbles: true }));
     } else if (command.y || command.x) {
@@ -156,7 +174,7 @@ export class Interface {
 
   disconnected(): void { this.pause.querySelector('.pause-note')!.textContent = 'Joypad desconectado. Reconéctalo o continúa con teclado.'; }
 
-  update(state: FlightState, metrics: RenderMetrics, gamepad: boolean): void {
+  update(state: FlightState, metrics: RenderMetrics, gamepad: boolean, difficulty: Difficulty = 'normal', padLabels?: readonly (readonly [string, string])[]): void {
     this.hud.classList.toggle('combat', state.enabled);
     this.speed.textContent = String(Math.round(Math.abs(state.player.vx))).padStart(3, '0');
     this.altitude.textContent = String(Math.round(state.player.y)).padStart(3, '0');
@@ -165,14 +183,24 @@ export class Interface {
     this.distance.textContent = `${String(Math.floor(state.distance)).padStart(4, '0')} u`;
     this.throttle.style.width = `${Math.abs(state.player.vx) / 70 * 100}%`;
     this.device.textContent = gamepad ? 'MANDO CONECTADO' : 'TECLADO';
-    const labels = gamepad ? PAD_CONTROL_LABELS : CONTROL_LABELS;
+    const labels = gamepad ? padLabels ?? PAD_CONTROL_LABELS : CONTROL_LABELS;
     const footer = this.root.querySelector('.flight-footer>div')!;
-    const deviceKey = gamepad ? 'pad' : 'keyboard';
+    const deviceKey = labels.map(([key]) => key).join('|');
     if (footer.getAttribute('data-device') !== deviceKey) {
       footer.setAttribute('data-device', deviceKey);
       footer.innerHTML = labels.map(([key, label]) => `<span><kbd>${key}</kbd> ${label}</span>`).join('');
+      this.root.querySelector('.gamepad-note')!.textContent = gamepad && padLabels
+        ? `Mando USB: ${padLabels.slice(1).map(([key, label]) => `${key} ${label.toLowerCase()}`).join(' · ')}. Puedes cambiarlo en CONFIGURAR MANDO.`
+        : 'Joypad: sur A/× disparar y confirmar · oeste X/□ bomba · norte Y/△ portal. Stick/cruceta navegar · este B/○ volver · Start pausa';
+      this.root.querySelector('.pad-help')!.textContent = gamepad && padLabels
+        ? `Stick / cruceta: elegir · ${padLabels[1]![0]}: confirmar · ${padLabels[5]![0]}: volver`
+        : 'Stick / cruceta: elegir · sur A/×: confirmar · este B/○: volver';
     }
     this.combatHud(state, metrics, gamepad);
+    if (gamepad && padLabels && state.portal.ready && this.root.querySelector('#combat-message')!.textContent?.startsWith('PORTAL LISTO')) {
+      this.root.querySelector('#combat-message')!.textContent = `PORTAL LISTO · ${padLabels[3]![0]} cerca del anillo para saltar`;
+    }
+    if (state.enabled) this.root.querySelector('.mission-status')!.textContent = `OLEADA 01 · ${DIFFICULTIES[difficulty].label.toUpperCase()} ${DIFFICULTIES[difficulty].speed}×`;
     this.backend.textContent = metrics.backend.toUpperCase();
     if (!this.hud.hidden) this.radar.draw(state, metrics.cameraX, metrics.viewWidth);
     if (this.debugVisible) this.root.querySelector('#metrics')!.textContent = [
