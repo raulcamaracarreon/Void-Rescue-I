@@ -1,7 +1,9 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { axis, bindingValue, Controller, defaultProfile, readController } from '../../src/input/Controller';
 import { FixedClock } from '../../src/core/Clock';
-import { DIFFICULTIES, difficulty } from '../../src/game/Difficulty';
+import { DIFFICULTIES, difficulty, difficultyProfile } from '../../src/game/Difficulty';
+import { Simulation } from '../../src/game/Simulation';
+import { waveSchedule } from '../../src/game/combat/Progression';
 import { InputManager } from '../../src/input/InputManager';
 
 afterEach(() => vi.unstubAllGlobals());
@@ -57,4 +59,17 @@ describe('ritmo de dificultad con paso fijo', () => {
     expect(frames).toBe(Math.round(600 * level.speed));
   });
   it('preferencias desconocidas vuelven a normal', () => { expect(difficulty('__proto__')).toBe('normal'); expect(difficulty('fast')).toBe('normal'); });
+  it('modifica recursos, cañón y población de forma determinista por perfil', () => {
+    const cadet = new Simulation(8042, 'combat-basic', 'cadet');
+    const normal = new Simulation(8042, 'combat-basic', 'normal');
+    const overdrive = new Simulation(8042, 'combat-basic', 'overdrive');
+    expect(cadet.state).toMatchObject({ difficulty: 'cadet', lives: 4, bombs: 3 });
+    expect(normal.state).toMatchObject({ difficulty: 'normal', lives: 3, bombs: 2 });
+    expect(overdrive.state).toMatchObject({ difficulty: 'overdrive', lives: 1, bombs: 1 });
+    expect(cadet.state.schedule.length).toBeLessThan(normal.state.schedule.length);
+    expect(overdrive.state.schedule.length).toBeGreaterThan(normal.state.schedule.length);
+    normal.update(1 / 60, { x: 0, y: 0, fire: true });
+    expect(normal.state.shots[0]).toMatchObject({ damage: difficultyProfile('normal').playerShotDamage });
+    expect(waveSchedule(4, 8042, 'expert')).toEqual(waveSchedule(4, 8042, 'expert'));
+  });
 });

@@ -77,7 +77,7 @@ export function updateProjectiles(ctx: CombatContext, dt: number, view?: FlightI
       ]
         .filter(hit => hit.t !== null).sort((a, b) => a.t! - b.t!);
       if (hits[0]) {
-        if (hits[0].type === 'enemy') damageEnemy(ctx, hits[0].target, 1);
+        if (hits[0].type === 'enemy') damageEnemy(ctx, hits[0].target, shot.damage ?? 1);
         else damageColonist(ctx, hits[0].target);
         shot.remaining = 0;
       }

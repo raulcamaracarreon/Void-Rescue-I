@@ -4,6 +4,14 @@ Estado inicial: **por comenzar**.
 
 Estado actual (2026-09-09): **fases 0–4 implementadas y comprobadas; validación técnica de fase 6 completada**. La fase 5 tiene presentación funcional, pendiente acabado artístico realista y evaluación humana de audio/control. El ciclo de combate y rescate solicitado ya es jugable de extremo a extremo.
 
+## Ajuste de ritmo y perfiles de dificultad — 2026-09-10
+
+Implementado: la dificultad deja de ser únicamente un multiplicador del reloj. Se añadieron Recluta, Relajado, Normal, Difícil, Experto y Sobremarcha. Normal asciende a 1.2× para un ritmo base más ágil; todos los perfiles conservan paso fijo, semilla y oleadas deterministas.
+
+- Cada perfil configura naves/bombas iniciales y sus límites, cadencia, velocidad y daño del cañón, y cantidad, velocidad, salud, proyectil y frecuencia de fuego enemigas.
+- El selector sigue disponible en título/pausa y muestra velocidad y naves. Cambiarlo durante una partida actualiza ritmo, cañón e IA sin conceder recursos; recursos/población se usan en la siguiente partida u oleada.
+- El diagnóstico expone el perfil activo completo. Pruebas unitarias verifican recursos, daño y horarios por perfil; Playwright cubre que Experto inicia con 2 naves, 1 bomba y 15 apariciones en la oleada base.
+
 Codex debe actualizar casillas, notas y resultados sin borrar el historial de decisiones.
 
 ## Incremento autorizado — combate, rescate y joypad (2026-09-09)

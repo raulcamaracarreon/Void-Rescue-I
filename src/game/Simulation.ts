@@ -10,6 +10,8 @@ import { updateColonists } from './combat/ColonistSystem';
 import { updateEnemies } from './combat/EnemySystem';
 import { updateBomb, updateLife, updateProjectiles, useBomb } from './combat/CombatSystem';
 import { advanceWave } from './combat/Progression';
+import { difficulty, difficultyProfile } from './Difficulty';
+import type { Difficulty } from './Difficulty';
 export { SCENARIOS } from './combat/scenarios';
 export type { ScenarioName } from './combat/scenarios';
 
@@ -20,11 +22,11 @@ export interface Player {
   vx: number; vy: number; facing: 1 | -1; thrust: number;
   alive: boolean; invulnerable: number;
 }
-export interface Shot { id: number; x: number; y: number; vx: number; vy: number; remaining: number; team: 'player' | 'enemy' }
+export interface Shot { id: number; x: number; y: number; vx: number; vy: number; remaining: number; team: 'player' | 'enemy'; damage?: number }
 export interface FlightState extends CombatState {
   seed: number; frame: number; time: number; distance: number; laps: number;
   player: Player; shots: Shot[]; shotsFired: number;
-  scenario: ScenarioName;
+  scenario: ScenarioName; difficulty: Difficulty;
 }
 
 export class Simulation {
@@ -35,11 +37,14 @@ export class Simulation {
   private portalHeld = false;
   readonly context: CombatContext;
 
-  constructor(seed = Number(CONFIG.defaultSeed), scenario: ScenarioName = 'flight-basic') {
+  constructor(seed = Number(CONFIG.defaultSeed), scenario: ScenarioName = 'flight-basic', selectedDifficulty: Difficulty = 'normal') {
+    const selected = difficulty(selectedDifficulty);
+    const profile = difficultyProfile(selected);
     const x = scenario === 'world-seam' ? CONFIG.worldWidth - 2 : CONFIG.startX;
     this.state = {
-      ...emptyCombat(scenario !== 'flight-basic' && scenario !== 'world-seam'),
+      ...emptyCombat(scenario !== 'flight-basic' && scenario !== 'world-seam', profile),
       seed: seed >>> 0, frame: 0, time: 0, distance: 0, laps: 0, scenario,
+      difficulty: selected,
       player: { x, y: CONFIG.startY, previousX: x, previousY: CONFIG.startY, vx: 0, vy: 0, facing: 1, thrust: 0, alive: true, invulnerable: 3 },
       shots: [], shotsFired: 0,
     };
@@ -53,6 +58,7 @@ export class Simulation {
 
   update(dt: number, input: FlightInput): void {
     const s = this.state;
+    const profile = difficultyProfile(s.difficulty);
     const p = s.player;
     if (s.enabled && s.outcome !== 'active') return;
     if (s.enabled) updateLife(this.context, dt);
@@ -78,10 +84,11 @@ export class Simulation {
     s.distance += Math.abs(p.vx * dt);
     this.shotCooldown = Math.max(0, this.shotCooldown - dt);
     if (input.fire && p.alive && this.shotCooldown <= 1e-9) {
-      this.shotCooldown = CONFIG.shotInterval;
+      this.shotCooldown = profile.playerShotInterval;
       s.shotsFired++;
       s.shots.push({ id: this.nextId++, x: wrapX(p.x + p.facing * 5, CONFIG.worldWidth), y: p.y,
-        vx: CONFIG.shotSpeed * p.facing + p.vx, vy: 0, team: 'player', remaining: CONFIG.shotLifetime });
+        vx: CONFIG.shotSpeed * profile.playerShotSpeed * p.facing + p.vx, vy: 0, team: 'player', remaining: CONFIG.shotLifetime,
+        damage: profile.playerShotDamage });
     }
     if (s.enabled) {
       if (input.bomb && !this.bombHeld) useBomb(this.context, input);
@@ -107,6 +114,10 @@ export class Simulation {
     if (!advanceWave(this.context)) return false;
     this.shotCooldown = 0; this.bombHeld = false; this.portalHeld = false;
     return true;
+  }
+
+  setDifficulty(value: Difficulty): void {
+    this.state.difficulty = difficulty(value);
   }
 
   snapshot(): FlightState { return structuredClone(this.state); }

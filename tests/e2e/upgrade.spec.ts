@@ -57,6 +57,10 @@ test('dificultad cambia velocidad real, persiste y se ajusta en pausa con mando'
   await page.getByRole('combobox', { name: 'Dificultad', exact: true }).selectOption('expert');
   await page.getByRole('button', { name: /INICIAR VUELO/ }).click();
   await page.waitForFunction(() => window.__VOID_RESCUE__!.getState().frame > 90);
+  expect(await page.evaluate(() => {
+    const state = window.__VOID_RESCUE__!.getState();
+    return { difficulty: state.difficulty, lives: state.lives, bombs: state.bombs, spawns: state.schedule.length };
+  })).toEqual({ difficulty: 'expert', lives: 2, bombs: 1, spawns: 15 });
   const sample = () => page.evaluate(async () => {
     const start = performance.now(), frame = window.__VOID_RESCUE__!.getState().frame;
     await new Promise(resolve => setTimeout(resolve, 750));
@@ -69,7 +73,7 @@ test('dificultad cambia velocidad real, persiste y se ajusta en pausa con mando'
   expect(await page.getByRole('combobox', { name: 'Dificultad', exact: true }).inputValue()).toBe('hard');
   await page.getByRole('combobox', { name: 'Dificultad', exact: true }).selectOption('relaxed');
   await page.getByRole('button', { name: /CONTINUAR VUELO/ }).click();
-  const slow = await sample(); expect(slow).toBeGreaterThan(40); expect(slow).toBeLessThan(55);
+  const slow = await sample(); expect(slow).toBeGreaterThan(55); expect(slow).toBeLessThan(68);
   await page.reload(); await page.waitForFunction(() => Boolean(window.__VOID_RESCUE__));
   await expect(page.getByRole('combobox', { name: 'Dificultad', exact: true })).toHaveValue('relaxed');
 });

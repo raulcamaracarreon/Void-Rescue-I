@@ -4,10 +4,11 @@ import { COMBAT } from './types';
 import type { CombatContext, CombatState } from './types';
 import { distance } from './spatial';
 import { spawnEnemy } from './EnemySystem';
+import type { DifficultyProfile } from '../Difficulty';
 
-export function emptyCombat(enabled: boolean): CombatState {
+export function emptyCombat(enabled: boolean, profile: Pick<DifficultyProfile, 'startingLives' | 'startingBombs'>): CombatState {
   return { wave: 1, waveStartedAt: 0, enabled, outcome: 'active', colonists: [], enemies: [], events: [], schedule: [], spawnIndex: 0,
-    score: 0, kills: 0, delivered: 0, lives: 3, bombs: 2, respawnTimer: 0,
+    score: 0, kills: 0, delivered: 0, lives: profile.startingLives, bombs: profile.startingBombs, respawnTimer: 0,
     portal: { x: 330, y: 46, ready: false, used: false, cooldown: 0 }, bomb: null, summary: null, colonyLost: false };
 }
 

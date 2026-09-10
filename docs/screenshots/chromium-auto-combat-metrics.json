@@ -1,7 +1,7 @@
 {
   "backend": "webgpu",
-  "fps": 60.01600426780478,
-  "frameMs": 16.662222222222212,
+  "fps": 60.01400326742911,
+  "frameMs": 16.662777777777766,
   "drawCalls": 44,
   "triangles": 18383,
   "geometries": 78,
@@ -9,12 +9,12 @@
   "width": 1920,
   "height": 1080,
   "pixelRatio": 1,
-  "cameraX": 508.5728556104245,
+  "cameraX": 507.49719308274325,
   "viewWidth": 199.11111111111111,
   "seed": 8042,
   "scenario": "combat-basic",
   "simulationHz": 60,
-  "frame": 250,
+  "frame": 253,
   "entities": {
     "player": 1,
     "enemies": 1,
@@ -32,7 +32,24 @@
     "remainingSpawns": 10
   },
   "difficulty": "normal",
-  "speed": 1,
+  "speed": 1.2,
+  "difficultyProfile": {
+    "label": "Normal",
+    "rank": 2,
+    "speed": 1.2,
+    "startingLives": 3,
+    "lifeCap": 3,
+    "startingBombs": 2,
+    "bombCap": 3,
+    "playerShotInterval": 0.15,
+    "playerShotSpeed": 1,
+    "playerShotDamage": 1,
+    "enemyCount": 1,
+    "enemySpeed": 1,
+    "enemyFireRate": 1,
+    "enemyShotSpeed": 1,
+    "enemyHealth": 1
+  },
   "controller": {
     "available": true,
     "error": "",
@@ -86,6 +103,6 @@
       }
     }
   },
-  "droppedSeconds": 0.08329999999999996,
+  "droppedSeconds": 0.1,
   "audioError": null
 }

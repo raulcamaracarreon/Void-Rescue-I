@@ -54,7 +54,7 @@ export class GameApp {
     const params = new URLSearchParams(location.search);
     const rawSeed = Number(params.get('seed') ?? CONFIG.defaultSeed);
     const seed = Number.isFinite(rawSeed) ? rawSeed >>> 0 : CONFIG.defaultSeed;
-    this.simulation = new Simulation(seed);
+    this.simulation = new Simulation(seed, 'flight-basic', this.preferences.difficulty);
     this.graphics = new FlightRenderer(canvas, seed, params.get('backend') === 'webgl2');
     this.graphics.renderer.onError = message => this.showError(new Error(message));
     this.graphics.renderer.onDeviceLost = info => this.showError(new Error(`Se perdió el dispositivo gráfico: ${info.message}`));
@@ -158,7 +158,7 @@ export class GameApp {
     this.saveRecord();
     this.run = { id: crypto.randomUUID(), pilot: this.records.pilot, difficulty: this.preferences.difficulty, date: new Date().toISOString() };
     this.unlockAudio();
-    this.simulation = new Simulation(this.simulation.state.seed, 'combat-basic');
+    this.simulation = new Simulation(this.simulation.state.seed, 'combat-basic', this.preferences.difficulty);
     this.audio.resetEvents(); this.lastTeleport = 0;
     this.graphics.reset(this.simulation.state, false);
     this.setMode('playing');
@@ -166,7 +166,7 @@ export class GameApp {
 
   restart(): void {
     if (this.simulation.state.enabled) { this.start(); return; }
-    this.simulation = new Simulation(this.simulation.state.seed, this.simulation.state.enabled ? 'combat-basic' : 'flight-basic');
+    this.simulation = new Simulation(this.simulation.state.seed, this.simulation.state.enabled ? 'combat-basic' : 'flight-basic', this.preferences.difficulty);
     this.audio.resetEvents(); this.lastTeleport = 0;
     this.graphics.reset(this.simulation.state, false);
     this.setMode('playing');
@@ -174,7 +174,7 @@ export class GameApp {
 
   menu(): void {
     this.saveRecord(); this.run = null;
-    this.simulation = new Simulation(this.simulation.state.seed);
+    this.simulation = new Simulation(this.simulation.state.seed, 'flight-basic', this.preferences.difficulty);
     this.audio.resetEvents(); this.lastTeleport = 0;
     this.graphics.reset(this.simulation.state, true);
     this.setMode('title');
@@ -192,11 +192,12 @@ export class GameApp {
   }
 
   private savePreferences(preferences: Preferences): void {
-    if (this.run && DIFFICULTIES[preferences.difficulty].speed < DIFFICULTIES[this.run.difficulty].speed) {
+    if (this.run && DIFFICULTIES[preferences.difficulty].rank < DIFFICULTIES[this.run.difficulty].rank) {
       this.run.difficulty = preferences.difficulty;
       this.saveRecord();
     }
     this.preferences = preferences;
+    this.simulation.setDifficulty(preferences.difficulty);
     this.audio.setMuted(preferences.muted);
     this.audio.setVolume(preferences.volume);
     this.ui.syncMuted(preferences.muted);
@@ -236,7 +237,7 @@ export class GameApp {
         if (!(SCENARIOS as readonly string[]).includes(name)) throw new Error(`Escenario no implementado: ${name}. Disponibles: ${SCENARIOS.join(', ')}`);
         if (!Number.isFinite(seed)) throw new Error('La semilla debe ser finita.');
         this.run = null;
-        this.simulation = new Simulation(seed, name as ScenarioName);
+        this.simulation = new Simulation(seed, name as ScenarioName, this.preferences.difficulty);
         this.audio.resetEvents(); this.lastTeleport = 0;
         this.graphics.reset(this.simulation.state, false);
         this.setMode('playing');
@@ -256,6 +257,7 @@ export class GameApp {
         wave: { number: this.simulation.state.wave, pressure: wavePressure(this.simulation.state.wave), ranked: Boolean(this.run), outcome: this.simulation.state.outcome, score: this.simulation.state.score, delivered: this.simulation.state.delivered,
           remainingSpawns: this.simulation.state.schedule.length - this.simulation.state.spawnIndex },
         difficulty: this.preferences.difficulty, speed: DIFFICULTIES[this.preferences.difficulty].speed,
+        difficultyProfile: { ...DIFFICULTIES[this.preferences.difficulty] },
         controller: this.input.controller.snapshot(), droppedSeconds: this.clock.droppedSeconds, audioError: this.audioError }),
       restart: () => this.restart(),
       listScenarios: () => [...SCENARIOS],

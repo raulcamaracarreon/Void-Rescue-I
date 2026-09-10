@@ -111,7 +111,7 @@ export class Interface {
     this.syncMuted(preferences.muted);
     const difficultySelects = [...root.querySelectorAll<HTMLSelectElement>('.difficulty-select')];
     for (const select of difficultySelects) {
-      select.innerHTML = Object.entries(DIFFICULTIES).map(([id, item]) => `<option value="${id}">${item.label} · ${item.speed}×</option>`).join('');
+      select.innerHTML = Object.entries(DIFFICULTIES).map(([id, item]) => `<option value="${id}">${item.label} · ${item.speed}× · ${item.startingLives} naves</option>`).join('');
       select.value = preferences.difficulty;
       select.addEventListener('change', () => {
         difficultySelects.forEach(other => { other.value = select.value; });
@@ -209,7 +209,7 @@ export class Interface {
     if (gamepad && padLabels && state.portal.ready && this.root.querySelector('#combat-message')!.textContent?.startsWith('PORTAL LISTO')) {
       this.root.querySelector('#combat-message')!.textContent = `PORTAL LISTO · ${padLabels[3]![0]} cerca del anillo para saltar`;
     }
-    if (state.enabled) this.root.querySelector('.mission-status')!.textContent = `OLEADA ${String(state.wave).padStart(2, '0')} · ${DIFFICULTIES[difficulty].label.toUpperCase()} ${DIFFICULTIES[difficulty].speed}×`;
+    if (state.enabled) this.root.querySelector('.mission-status')!.textContent = `OLEADA ${String(state.wave).padStart(2, '0')} · ${DIFFICULTIES[difficulty].label.toUpperCase()} ${DIFFICULTIES[difficulty].speed}× · ${state.lives} NAVES`;
     this.backend.textContent = metrics.backend.toUpperCase();
     if (!this.hud.hidden) this.radar.draw(state, metrics.cameraX, metrics.viewWidth);
     if (this.debugVisible) this.root.querySelector('#metrics')!.textContent = [

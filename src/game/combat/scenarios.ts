@@ -10,7 +10,7 @@ export function initializeScenario(ctx: CombatContext, name: ScenarioName): void
   const s = ctx.state, p = s.player;
   if (!s.enabled) return;
   populateColonists(ctx);
-  if (name === 'combat-basic') { s.schedule = waveSchedule(1, s.seed); return; }
+  if (name === 'combat-basic') { s.schedule = waveSchedule(1, s.seed, s.difficulty); return; }
   p.invulnerable = 0;
   const c = s.colonists[0]!;
   if (name === 'combat-showcase') {
