@@ -190,3 +190,33 @@ describe('combate y oleada', () => {
     }
   });
 });
+
+describe('modo rescatista', () => {
+  it('extrae con la acción contextual y sólo entrega dentro de Fortaleza 01', () => {
+    const s = new Simulation(8042, 'rescue-pickup', 'normal', 'rescue');
+    const colonist = s.state.colonists[0]!;
+    s.state.schedule = [];
+    tick(s, 1, { x: 0, y: 0, fire: false, portal: true });
+    expect(colonist.status).toBe('extracting');
+    tick(s, 70);
+    expect(colonist.status).toBe('carried');
+    expect(s.state.score).toBe(COMBAT.catchPoints);
+
+    s.state.player.x = s.state.player.previousX = 700;
+    s.state.player.y = s.state.player.previousY = s.context.terrain.height(700) + 4;
+    s.state.player.vx = s.state.player.vy = 0;
+    tick(s, 1);
+    expect(colonist.status).toBe('carried');
+
+    s.state.player.x = s.state.player.previousX = 330;
+    s.state.player.y = s.state.player.previousY = s.context.terrain.height(330) + 4;
+    tick(s, 1);
+    expect(colonist.status).toBe('safe');
+    expect(s.state.delivered).toBe(1);
+    expect(s.state.outcome).toBe('active');
+
+    for (const other of s.state.colonists) other.status = 'safe';
+    tick(s, 1);
+    expect(s.state.outcome).toBe('victory');
+  });
+});

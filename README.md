@@ -45,6 +45,17 @@ Primera oleada: cinco Harvesters, tres Interceptors y un Flux Node, escalonados 
 
 La bomba carga 0.25 s, destruye amenazas activas dentro de la vista al pulsarla y limpia sus proyectiles. Conserva colonos y enemigos aún materializándose. Los supervivientes en tierra cuentan para cerrar la oleada: no es obligatorio provocar caídas para ganar.
 
+## Modos de juego
+
+La portada permite elegir entre dos operaciones que comparten enemigos, combate, dificultad, rescates en caída, portal, puntuación y oleadas infinitas:
+
+- **Defensivo:** la operación original. Protege a los colonos de los abductores; los supervivientes pueden permanecer en tierra y una entrega rescatada puede realizarse al descender con seguridad.
+- **Rescatista:** además de combatir, debes evacuar a cada colono superviviente. Colócate hasta 13 unidades por encima de un colono en tierra y pulsa **E** o el botón norte para iniciar el haz de extracción. Cuando esté a bordo, regresa a **Fortaleza 01**, marcada con un cuadrado cian en el radar, y desciende dentro de su perímetro a menos de 22 u/s horizontales y 12 u/s verticales. La oleada no termina mientras quede un superviviente fuera de la fortaleza.
+
+El modo elegido se guarda localmente. La fortaleza es una construcción procedural propia sobre la estación 01; aparece únicamente en Rescatista. El portal conserva la misma acción contextual E/botón norte: cerca de un colono inicia extracción y, cerca del portal habilitado, ejecuta el salto.
+
+Verificación del modo Rescatista (2026-09-10): `npm run typecheck`, `npm test` (60 pruebas), `npm run build` y 38 recorridos Playwright aprobados, 19 en Chromium/WebGPU y 19 en Chromium/WebGL2. El build conserva únicamente el aviso conocido por el tamaño del paquete JavaScript.
+
 ## Controles
 
 | Acción | Teclado | Joypad estándar (Xbox / PlayStation) |
@@ -52,7 +63,7 @@ La bomba carga 0.25 s, destruye amenazas activas dentro de la vista al pulsarla 
 | Pilotar | WASD o flechas | Stick izquierdo o cruceta |
 | Disparar, mantener para repetir | Espacio | Sur: A / × |
 | Bomba inteligente | Shift | Oeste: X / □ |
-| Portal cercano | E | Norte: Y / △ |
+| Acción contextual: extracción / portal | E | Norte: Y / △ |
 | Pausa / continuar | Esc | Start / Options |
 | Elegir opción del menú | Tab / Shift+Tab | Stick o cruceta |
 | Confirmar / iniciar | Enter sobre la opción | Sur: A / ×; Start inicia también |
@@ -69,7 +80,7 @@ Pausa automática al perder foco, cambiar de pestaña o desconectar el joypad de
 
 1. Haz clic en el juego y pulsa un botón del mando. Su nombre debe aparecer bajo **CONFIGURAR MANDO USB**, disponible en título y pausa.
 2. Abre ese panel. Los ejes cambian de valor y los botones se iluminan; «Última señal» conserva el último control recibido.
-3. Si las acciones no coinciden, suelta todos los controles y pulsa **CALIBRAR DIRECCIONES Y BOTONES**. Sigue las nueve indicaciones: izquierda, derecha, arriba, abajo, disparar/confirmar, bomba, portal, pausa/iniciar y volver. Suelta el control entre pasos.
+3. Si las acciones no coinciden, suelta todos los controles y pulsa **CALIBRAR DIRECCIONES Y BOTONES**. Sigue las nueve indicaciones: izquierda, derecha, arriba, abajo, disparar/confirmar, bomba, acción/portal, pausa/iniciar y volver. Suelta el control entre pasos.
 4. El perfil se guarda localmente por modelo de mando. **LISTO / VOLVER** regresa al juego. **Restablecer** recupera el perfil inicial; cancelar conserva el perfil anterior.
 
 Corrección: la versión anterior filtraba `mapping === 'standard'` y descartaba este USB. La [especificación de Gamepad](https://www.w3.org/TR/gamepad/) permite mapeo vacío para dispositivos originales y exige interacción para exponerlos. Ahora un bloqueo de la API se muestra en pantalla sin detener el juego. Si el panel no recibe señal, abrir la dirección del juego directamente en Chrome/Edge; el código no puede instalar controladores ni superar un bloqueo del navegador.
@@ -89,7 +100,7 @@ Verificación física del 2026-09-09: `USB Joystick (Vendor: 0079 Product: 0006)
 
 Selector en título y pausa, con teclado, ratón o izquierda/derecha del mando sobre la opción. Se conserva el paso fijo de 1/60; el nivel cambia cuántos pasos se ejecutan por segundo real. Además del ritmo global, cada perfil controla naves/bombas iniciales y sus límites de reposición, cadencia y velocidad del cañón, impactos necesarios para destruir cada enemigo, y cantidad, velocidad, velocidad de proyectil y frecuencia de fuego enemigos. La bomba sigue eliminando enemigos dentro de su área sin requerir impactos. Cambiarlo durante una partida aplica inmediatamente el ritmo, cañón e IA; los recursos iniciales y la población se aplican al iniciar/reiniciar y en la siguiente oleada para no modificar entidades o conceder recursos a mitad de combate. El tiempo del resumen es tiempo de simulación y la puntuación no se multiplica por dificultad.
 
-Verificación del ajuste (2026-09-10): `npm run typecheck`, `npm test` (58 pruebas), `npm run build` y los 36 recorridos Playwright de Chromium/WebGPU y WebGL2 aprobados. El build conserva el aviso conocido por un paquete JavaScript de ~971 kB, no un error.
+Verificación acumulada tras añadir Rescatista (2026-09-10): `npm run typecheck`, `npm test` (60 pruebas), `npm run build` y los 38 recorridos Playwright de Chromium/WebGPU y WebGL2 aprobados. El build conserva el aviso conocido por un paquete JavaScript de ~976 kB, no un error.
 
 ## Oleadas infinitas y récords
 
@@ -97,7 +108,7 @@ No hay última oleada. Tras el resumen elige **SIGUIENTE OLEADA** con Enter o co
 
 La oleada 1 conserva sus nueve apariciones. Las siguientes añaden dos enemigos por nivel, hasta 33 apariciones por oleada, más un máximo global de tres drones activos. Las composiciones incluyen Harvesters, Interceptors, Wraiths y Flux. La presión `1 + 0.8 × (oleada - 1) / (oleada + 9)` aumenta velocidad enemiga, velocidad de sus proyectiles y frecuencia de ataque; también reduce el intervalo entre apariciones. Se aproxima a 1.8× sin multiplicar entidades indefinidamente. Se combina con la dificultad global elegida. Los bonos de tiempo se calculan con el reloj de cada oleada; el HUD conserva el tiempo total.
 
-Elige tus tres iniciales (A–Z / 0–9) antes de iniciar. Con mando: arriba/abajo cambia el control seleccionado; izquierda/derecha cambia su letra o número. **VER RÉCORDS** está en título, pausa y resumen. El top 10 muestra iniciales, puntos acumulados, oleada alcanzada y dificultad mínima utilizada durante la partida; la fecha aparece al pasar el cursor sobre la fila. Desempate por oleada y fecha. No registra partidas con cero puntos.
+Elige tus tres iniciales (A–Z / 0–9) antes de iniciar. Con mando: arriba/abajo cambia el control seleccionado; izquierda/derecha cambia su letra o número. **VER RÉCORDS** está en título, pausa y resumen. El top 10 muestra iniciales, puntos acumulados, oleada alcanzada, modo de juego y dificultad mínima utilizada durante la partida; la fecha aparece al pasar el cursor sobre la fila. Desempate por oleada y fecha. No registra partidas con cero puntos. Los registros anteriores a los modos se identifican como Defensivo.
 
 Se actualiza una sola entrada por partida al cerrar una oleada, perder, salir al menú, reiniciar, consultar la tabla o cerrar/recargar la página. No necesitas escribir al perder y puedes jugar todo con mando. Si bajas la dificultad, el récord refleja ese nivel aunque luego lo subas. Los escenarios y pasos manuales de diagnóstico no registran récords.
 
@@ -171,6 +182,7 @@ Pares `chromium-auto-*` y `chromium-webgl2-*` en `docs/screenshots/`:
 | --- | --- |
 | `combat.png` | Oleada principal en curso |
 | `abduction.png`, `rescue.png`, `wave-complete.png` | Captura, transporte y entrega con teclado |
+| `rescue-title.png`, `rescue-mode.png` | Selector de modo, Fortaleza 01 y extracción del jugador |
 | `full-wave.png`, `full-wave.json` | Victoria principal y resultado |
 | `enemy-families.png`, `effects.png` | Familias, portal y combate de diagnóstico |
 | `combat-metrics.json`, `showcase-metrics.json` | Entidades, rendimiento y backend |
@@ -207,7 +219,7 @@ vr.listScenarios();
 vr.restart(); // Nueva oleada principal desde un escenario de combate.
 ```
 
-Escenarios: `combat-basic`, `abduction-start`, `falling-colonist`, `portal-ready`, `wave-near-complete`, `player-near-death`; auxiliares `last-life`, `combat-showcase`; regresión `flight-basic`, `world-seam`.
+Escenarios: `combat-basic`, `abduction-start`, `falling-colonist`, `portal-ready`, `wave-near-complete`, `player-near-death`; auxiliares `last-life`, `combat-showcase`, `rescue-pickup`; regresión `flight-basic`, `world-seam`.
 
 ## Límites pendientes
 

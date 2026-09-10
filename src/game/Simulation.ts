@@ -12,6 +12,9 @@ import { updateBomb, updateLife, updateProjectiles, useBomb } from './combat/Com
 import { advanceWave } from './combat/Progression';
 import { difficulty, difficultyProfile } from './Difficulty';
 import type { Difficulty } from './Difficulty';
+import { missionMode } from './MissionMode';
+import type { MissionMode } from './MissionMode';
+import { startPlayerExtraction } from './combat/ColonistSystem';
 export { SCENARIOS } from './combat/scenarios';
 export type { ScenarioName } from './combat/scenarios';
 
@@ -26,7 +29,7 @@ export interface Shot { id: number; x: number; y: number; vx: number; vy: number
 export interface FlightState extends CombatState {
   seed: number; frame: number; time: number; distance: number; laps: number;
   player: Player; shots: Shot[]; shotsFired: number;
-  scenario: ScenarioName; difficulty: Difficulty;
+  scenario: ScenarioName; difficulty: Difficulty; missionMode: MissionMode;
 }
 
 export class Simulation {
@@ -37,14 +40,15 @@ export class Simulation {
   private portalHeld = false;
   readonly context: CombatContext;
 
-  constructor(seed = Number(CONFIG.defaultSeed), scenario: ScenarioName = 'flight-basic', selectedDifficulty: Difficulty = 'normal') {
+  constructor(seed = Number(CONFIG.defaultSeed), scenario: ScenarioName = 'flight-basic', selectedDifficulty: Difficulty = 'normal', selectedMissionMode: MissionMode = 'defense') {
     const selected = difficulty(selectedDifficulty);
+    const selectedMode = missionMode(selectedMissionMode);
     const profile = difficultyProfile(selected);
     const x = scenario === 'world-seam' ? CONFIG.worldWidth - 2 : CONFIG.startX;
     this.state = {
       ...emptyCombat(scenario !== 'flight-basic' && scenario !== 'world-seam', profile),
       seed: seed >>> 0, frame: 0, time: 0, distance: 0, laps: 0, scenario,
-      difficulty: selected,
+      difficulty: selected, missionMode: selectedMode,
       player: { x, y: CONFIG.startY, previousX: x, previousY: CONFIG.startY, vx: 0, vy: 0, facing: 1, thrust: 0, alive: true, invulnerable: 3 },
       shots: [], shotsFired: 0,
     };
@@ -91,7 +95,9 @@ export class Simulation {
     }
     if (s.enabled) {
       if (input.bomb && !this.bombHeld) useBomb(this.context, input);
-      updateWave(this.context, dt, Boolean(input.portal && !this.portalHeld));
+      const contextPressed = Boolean(input.portal && !this.portalHeld);
+      const extracting = contextPressed && s.missionMode === 'rescue' && startPlayerExtraction(this.context);
+      updateWave(this.context, dt, contextPressed && !extracting);
       updateEnemies(this.context, dt);
       updateBomb(this.context, dt);
       updateProjectiles(this.context, dt, input.view);
@@ -117,6 +123,10 @@ export class Simulation {
 
   setDifficulty(value: Difficulty): void {
     this.state.difficulty = difficulty(value);
+  }
+
+  setMissionMode(value: MissionMode): void {
+    this.state.missionMode = missionMode(value);
   }
 
   snapshot(): FlightState { return structuredClone(this.state); }

@@ -21,3 +21,5 @@ export const SETTLEMENTS = [
   { x: 1160, name: 'ESTACIÓN 02', short: '02' },
   { x: 2040, name: 'ESTACIÓN 03', short: '03' },
 ] as const;
+
+export const SAFE_BASE = { x: SETTLEMENTS[0].x, radius: 22, name: 'FORTALEZA 01' } as const;

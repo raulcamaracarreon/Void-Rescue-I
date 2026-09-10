@@ -229,3 +229,9 @@ El usuario amplía el vertical de una oleada a una partida sin oleada final. El 
 La primera oleada se conserva; las siguientes aumentan cantidad, velocidad y frecuencia de ataque con población acotada y presión asintótica. No se añaden familias ni campaña. Reglas y fórmula en README/Progression.ts.
 
 Récords locales top 10 por partida, iniciales de tres caracteres, puntos, oleada alcanzada, dificultad mínima usada y fecha. Selección de iniciales y navegación completa con joypad o teclado. Se guardan resultados, sin reanudación del estado de juego ni cuentas.
+
+## Ampliación autorizada: modo Rescatista — 2026-09-10
+
+La portada ofrece Defensivo y Rescatista. Defensivo conserva el bucle existente. Rescatista mantiene combate, abducciones enemigas, rescates en caída, dificultad y oleadas, y añade extracción voluntaria de colonos en tierra mediante la acción contextual E/botón norte.
+
+La extracción acerca al colono progresivamente a la nave con un haz legible. Una vez transportado, sólo se entrega al descender lentamente dentro de Fortaleza 01, instalación segura señalada en escena y radar. La victoria exige eliminar amenazas, resolver estados en tránsito y entregar en la fortaleza a todos los colonos que sigan vivos. La muerte de la nave durante una extracción o transporte devuelve al colono a caída. El portal comparte la acción contextual sin reemplazar esta mecánica.

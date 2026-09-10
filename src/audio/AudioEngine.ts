@@ -79,7 +79,7 @@ export class AudioEngine {
         continue;
       }
       const frequencies: Record<GameEvent['kind'], [number, number, number, OscillatorType]> = {
-        spawn: [190, 270, 0.18, 'sine'], capture: [850, 480, 0.35, 'triangle'],
+        spawn: [190, 270, 0.18, 'sine'], capture: [850, 480, 0.35, 'triangle'], extraction: [180, 960, 0.48, 'sine'],
         falling: [980, 250, 0.45, 'triangle'], landing: [390, 540, 0.2, 'sine'],
         rescue: [420, 1120, 0.3, 'sine'], delivery: [660, 1580, 0.4, 'sine'],
         lost: [260, 65, 0.5, 'triangle'], mutation: [120, 690, 0.38, 'sawtooth'],

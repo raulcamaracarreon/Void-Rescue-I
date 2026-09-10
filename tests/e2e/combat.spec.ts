@@ -44,6 +44,24 @@ test('abducción, destrucción del captor, rescate y entrega con teclado', async
   await page.screenshot({ path: `${output}/${info.project.name}-wave-complete.png` });
 });
 
+test('modo rescatista inicia extracción con E y muestra la fortaleza segura', async ({ page }, info) => {
+  await page.keyboard.press('Escape');
+  await page.getByRole('button', { name: 'Volver al menú' }).click();
+  await page.getByRole('combobox', { name: 'Modo de juego' }).selectOption('rescue');
+  await page.screenshot({ path: `${output}/${info.project.name}-rescue-title.png` });
+  await page.getByRole('button', { name: /INICIAR VUELO/ }).click();
+  await page.evaluate(() => window.__VOID_RESCUE__!.loadScenario('rescue-pickup'));
+  await expect(page.getByText('EVACUACIÓN DE LA COLONIA')).toBeVisible();
+  expect((await getState(page)).missionMode).toBe('rescue');
+  await page.keyboard.down('KeyE');
+  await page.waitForFunction(() => window.__VOID_RESCUE__!.getState().colonists[0]!.status === 'extracting');
+  await page.keyboard.up('KeyE');
+  expect((await getState(page)).colonists[0]!.status).toBe('extracting');
+  await expect(page.locator('.safe-base-label')).toContainText('FORTALEZA 01');
+  await page.screenshot({ path: `${output}/${info.project.name}-rescue-mode.png` });
+  await page.waitForFunction(() => window.__VOID_RESCUE__!.getState().colonists[0]!.status === 'carried');
+});
+
 test('seis escenarios obligatorios, combate real y rendimiento', async ({ page }, info) => {
   for (const name of ['combat-basic', 'abduction-start', 'falling-colonist', 'portal-ready', 'wave-near-complete', 'player-near-death']) {
     await page.evaluate(name => { window.__VOID_RESCUE__!.loadScenario(name, 8042); window.__VOID_RESCUE__!.setPaused(true); }, name);

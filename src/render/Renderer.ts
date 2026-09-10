@@ -108,7 +108,7 @@ export class FlightRenderer {
     const playerX = active ? wrappedLerp(p.previousX, p.x, alpha, CONFIG.worldWidth) : p.x;
     if (!title) this.rig.update(playerX, p.vx, p.facing, this.viewWidth, elapsed, reducedMotion);
     this.camera.position.x = this.rig.x;
-    this.world.update(this.rig.x, this.viewWidth);
+    this.world.update(this.rig.x, this.viewWidth, state.missionMode);
     this.combat.update(state, this.rig.x, this.viewWidth, reducedMotion, elapsed);
     this.ship.group.visible = p.alive || title;
     if (!reducedMotion) {

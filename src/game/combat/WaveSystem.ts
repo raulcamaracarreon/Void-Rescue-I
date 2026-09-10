@@ -32,8 +32,9 @@ export function updateWave(ctx: CombatContext, dt: number, portalPressed: boolea
 
 export function resolveWave(ctx: CombatContext): void {
   const s = ctx.state;
-  const pending = s.colonists.some(c => c.status === 'captured' || c.status === 'falling' || c.status === 'carried');
-  if (s.outcome === 'active' && s.player.alive && s.spawnIndex === s.schedule.length && s.enemies.length === 0 && !pending) {
+  const pending = s.colonists.some(c => c.status === 'captured' || c.status === 'extracting' || c.status === 'falling' || c.status === 'carried');
+  const rescuePending = s.missionMode === 'rescue' && s.colonists.some(c => c.status !== 'safe' && c.status !== 'lost');
+  if (s.outcome === 'active' && s.player.alive && s.spawnIndex === s.schedule.length && s.enemies.length === 0 && !pending && !rescuePending) {
     s.outcome = 'victory'; ctx.emit('victory', s.player.x, s.player.y);
   }
   if (s.outcome !== 'active' && !s.summary) {

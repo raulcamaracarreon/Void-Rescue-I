@@ -1,8 +1,10 @@
 import { DIFFICULTIES } from './Difficulty';
 import type { Difficulty } from './Difficulty';
+import { MISSION_MODES } from './MissionMode';
+import type { MissionMode } from './MissionMode';
 
 export interface PlayerRecord {
-  id: string; pilot: string; score: number; wave: number; difficulty: Difficulty; date: string;
+  id: string; pilot: string; score: number; wave: number; difficulty: Difficulty; missionMode?: MissionMode; date: string;
 }
 export const RECORDS_KEY = 'void-rescue.records.v1';
 export const PILOT_KEY = 'void-rescue.pilot';
@@ -19,6 +21,7 @@ function valid(value: unknown): value is PlayerRecord {
     && Number.isSafeInteger(r.score) && Number(r.score) > 0
     && Number.isSafeInteger(r.wave) && Number(r.wave) >= 1
     && typeof r.difficulty === 'string' && Object.hasOwn(DIFFICULTIES, r.difficulty)
+    && (r.missionMode === undefined || (typeof r.missionMode === 'string' && Object.hasOwn(MISSION_MODES, r.missionMode)))
     && typeof r.date === 'string' && r.date.length <= 30 && Number.isFinite(Date.parse(r.date));
 }
 

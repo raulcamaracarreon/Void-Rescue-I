@@ -1,5 +1,5 @@
 import { radarSegments, wrapX } from '../core/WorldWrap';
-import { CONFIG, SETTLEMENTS } from '../game/config';
+import { CONFIG, SAFE_BASE, SETTLEMENTS } from '../game/config';
 import type { FlightState } from '../game/Simulation';
 import { Terrain } from '../game/Terrain';
 
@@ -39,21 +39,25 @@ export class Radar {
       const x = station.x / CONFIG.worldWidth * w, y = h - 8;
       c.strokeStyle = '#cbb88c'; c.beginPath(); c.moveTo(x, y - 4); c.lineTo(x + 3, y); c.lineTo(x, y + 4); c.lineTo(x - 3, y); c.closePath(); c.stroke();
     }
-    const mark = (x: number, y: number, type: 'colonist' | 'enemy' | 'portal' | 'falling' | 'captured' | 'targeted', tint: string) => {
+    if (state.missionMode === 'rescue') {
+      const x = SAFE_BASE.x / CONFIG.worldWidth * w, y = h - 8;
+      c.strokeStyle = '#83ffdb'; c.lineWidth = 2; c.strokeRect(x - 5, y - 5, 10, 10); c.lineWidth = 1;
+    }
+    const mark = (x: number, y: number, type: 'colonist' | 'enemy' | 'portal' | 'falling' | 'captured' | 'targeted' | 'extracting', tint: string) => {
       const px = wrapX(x, CONFIG.worldWidth) / CONFIG.worldWidth * w, py = h - y / 105 * h;
       c.strokeStyle = c.fillStyle = tint;
       for (const rx of [px, px - w, px + w]) {
-        if (type === 'falling' || type === 'captured' || type === 'targeted') {
+        if (type === 'falling' || type === 'captured' || type === 'targeted' || type === 'extracting') {
           c.font = 'bold 13px monospace'; c.textAlign = 'center'; c.textBaseline = 'middle';
-          c.fillText(type === 'falling' ? '↓' : type === 'captured' ? '↑' : '!', rx, py);
+          c.fillText(type === 'falling' ? '↓' : type === 'captured' || type === 'extracting' ? '↑' : '!', rx, py);
         } else if (type === 'colonist') { c.fillRect(rx - 1.5, py - 2.5, 3, 5); }
         else if (type === 'portal') { c.beginPath(); c.arc(rx, py, 4, 0, Math.PI * 2); c.stroke(); }
         else { c.beginPath(); c.moveTo(rx, py - 3); c.lineTo(rx + 3, py + 2); c.lineTo(rx - 3, py + 2); c.closePath(); c.fill(); }
       }
     };
     for (const colonist of state.colonists) if (colonist.status !== 'lost') mark(colonist.x, colonist.y,
-      colonist.status === 'falling' || colonist.status === 'captured' || colonist.status === 'targeted' ? colonist.status : 'colonist',
-      ['captured', 'targeted', 'falling'].includes(colonist.status) ? '#ffca80' : '#baffdf');
+      colonist.status === 'falling' || colonist.status === 'captured' || colonist.status === 'targeted' || colonist.status === 'extracting' ? colonist.status : 'colonist',
+      colonist.status === 'extracting' ? '#83ffdb' : ['captured', 'targeted', 'falling'].includes(colonist.status) ? '#ffca80' : '#baffdf');
     for (const enemy of state.enemies) mark(enemy.x, enemy.y, 'enemy', enemy.kind === 'wraith' ? '#ed91ff' : '#ff837b');
     if (state.portal.ready) mark(state.portal.x, state.portal.y, 'portal', '#b894ff');
     const px = wrapX(state.player.x, CONFIG.worldWidth) / CONFIG.worldWidth * w;

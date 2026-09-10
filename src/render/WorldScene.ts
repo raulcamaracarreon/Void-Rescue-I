@@ -1,9 +1,10 @@
 import {
   BoxGeometry, BufferGeometry, Color, CylinderGeometry, Float32BufferAttribute,
-  Group, InstancedMesh, Mesh, Object3D, PlaneGeometry, SphereGeometry,
+  Group, InstancedMesh, Mesh, Object3D, PlaneGeometry, SphereGeometry, TorusGeometry,
 } from 'three/webgpu';
 import { Random } from '../core/Random';
-import { CONFIG, SETTLEMENTS } from '../game/config';
+import { CONFIG, SAFE_BASE, SETTLEMENTS } from '../game/config';
+import type { MissionMode } from '../game/MissionMode';
 import { Terrain } from '../game/Terrain';
 import { nearCameraX } from '../core/WorldWrap';
 import { basaltMaterial, beaconMaterial, emission, metal, planetMaterial, skyMaterial } from './materials';
@@ -76,6 +77,25 @@ function createSettlement(x: number, terrain: Terrain, random: Random): Group {
   return group;
 }
 
+function createRescueFortress(terrain: Terrain): Group {
+  const group = new Group();
+  group.position.set(SAFE_BASE.x, terrain.height(SAFE_BASE.x), -4.5);
+  const armor = metal(0x38515a, 0.58, 0.72), dark = metal(0x172b34, 0.86, 0.45), safe = emission(0x72ffd6, 1.1);
+  const pad = new Mesh(new CylinderGeometry(8.5, 9.5, 0.7, 16), dark); pad.position.y = 0.4; group.add(pad);
+  const padRing = new Mesh(new TorusGeometry(6.3, 0.24, 8, 32), safe); padRing.rotation.x = Math.PI / 2; padRing.position.y = 0.82; group.add(padRing);
+  for (const side of [-1, 1]) {
+    const wall = new Mesh(new BoxGeometry(8, 3.2, 4.5), armor); wall.position.set(side * 11.5, 1.8, 0); group.add(wall);
+    const tower = new Mesh(new CylinderGeometry(2.1, 2.7, 11, 8), armor); tower.position.set(side * 16, 5.5, 0); group.add(tower);
+    const crown = new Mesh(new TorusGeometry(2.25, 0.22, 6, 16), safe); crown.rotation.x = Math.PI / 2; crown.position.set(side * 16, 11, 0); group.add(crown);
+  }
+  const arch = new Mesh(new BoxGeometry(9, 0.8, 2.2), armor); arch.position.set(0, 8.5, 0); group.add(arch);
+  for (const side of [-1, 1]) {
+    const pillar = new Mesh(new BoxGeometry(1.1, 8, 2.2), armor); pillar.position.set(side * 4, 4.5, 0); group.add(pillar);
+  }
+  const beacon = new Mesh(new SphereGeometry(0.65, 12, 8), safe); beacon.position.set(0, 10.2, 0); group.add(beacon);
+  return group;
+}
+
 export class WorldScene {
   readonly group = new Group();
   readonly backdrop = new Group();
@@ -86,10 +106,13 @@ export class WorldScene {
   private readonly matrix = new Object3D();
   private readonly sky: Mesh;
   private readonly moon = new Group();
+  private readonly fortress: Group;
 
   constructor(seed: number) {
     const random = new Random(seed ^ 0x71a4);
     const terrain = new Terrain(seed);
+    this.fortress = createRescueFortress(terrain);
+    this.group.add(this.fortress);
     this.sky = new Mesh(new PlaneGeometry(1, 1), skyMaterial());
     this.sky.position.set(0, 52, -170);
     this.backdrop.add(this.sky);
@@ -133,13 +156,15 @@ export class WorldScene {
     }
   }
 
-  update(cameraX: number, viewWidth: number): void {
+  update(cameraX: number, viewWidth: number, missionMode: MissionMode): void {
     this.backdrop.position.x = cameraX;
     this.sky.scale.set(viewWidth + 5, 140, 1);
     this.moon.position.x = viewWidth * 0.24 - Math.sin(cameraX / CONFIG.worldWidth * Math.PI * 2) * 4;
     const tileIndex = Math.floor(cameraX / CONFIG.worldWidth);
     this.terrainCopies.forEach((tile, index) => { tile.position.x = (tileIndex + index - 1) * CONFIG.worldWidth; });
     this.settlements.forEach(model => { model.position.x = nearCameraX(model.userData.worldX as number, cameraX, CONFIG.worldWidth); });
+    this.fortress.visible = missionMode === 'rescue';
+    this.fortress.position.x = nearCameraX(SAFE_BASE.x, cameraX, CONFIG.worldWidth);
     this.starPositions.forEach((star, i) => {
       this.matrix.position.set(((star.x - cameraX * 0.035 + 165) % 330 + 330) % 330 - 165, star.y, star.z);
       this.matrix.scale.setScalar(star.size);

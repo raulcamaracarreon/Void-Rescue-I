@@ -19,6 +19,8 @@ export class CombatVisuals {
   private readonly beams = new Map<number, Mesh>();
   private readonly beamGeometry = new PlaneGeometry(1, 1);
   private readonly beamMaterial = new MeshBasicNodeMaterial({ color: 0xc6a6ff, transparent: true, opacity: 0.16, depthWrite: false, side: DoubleSide });
+  private readonly tractorMaterial = new MeshBasicNodeMaterial({ color: 0x7dffe0, transparent: true, opacity: 0.24, depthWrite: false, side: DoubleSide });
+  private readonly tractorBeam = new Mesh(this.beamGeometry, this.tractorMaterial);
   private readonly portal = new Group();
   private readonly shield: Mesh;
   private readonly particles: InstancedMesh;
@@ -31,6 +33,7 @@ export class CombatVisuals {
 
   constructor() {
     this.group.add(this.destruction.group);
+    this.tractorBeam.visible = false; this.group.add(this.tractorBeam);
     for (const kind of ['harvester', 'wraith', 'interceptor', 'flux', 'drone', 'crossfire'] as const) this.templates.set(kind, enemyModel(kind));
     for (let i = 0; i < 3; i++) {
       const ring = new Mesh(new TorusGeometry(7 - i * 0.5, 0.22, 8, 48), emission(i === 1 ? 0xb590ff : 0x98f6eb));
@@ -95,6 +98,15 @@ export class CombatVisuals {
     }
     for (const [id, model] of this.entities) if (!liveIds.has(id)) { this.group.remove(model); this.entities.delete(id); }
     for (const [id, beam] of this.beams) if (!liveIds.has(id)) { this.group.remove(beam); this.beams.delete(id); }
+    const extracting = state.colonists.find(c => c.status === 'extracting');
+    if (extracting) {
+      const colonistX = x(extracting.x), playerX = x(state.player.x);
+      const dx = playerX - colonistX, dy = state.player.y - extracting.y;
+      this.tractorBeam.visible = visible(extracting.x);
+      this.tractorBeam.position.set((colonistX + playerX) / 2, (extracting.y + state.player.y) / 2, 10);
+      this.tractorBeam.rotation.z = Math.atan2(dx, dy);
+      this.tractorBeam.scale.set(2.8 + Math.sin(state.time * 20) * 0.3, Math.max(0.1, Math.hypot(dx, dy)), 1);
+    } else this.tractorBeam.visible = false;
     this.portal.visible = state.portal.ready && visible(state.portal.x);
     this.portal.position.set(x(state.portal.x), state.portal.y, -1);
     this.portal.rotation.z = reduced ? 0 : Math.sin(state.time * 0.7) * 0.06;

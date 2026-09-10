@@ -3,7 +3,7 @@ import type { CombatContext } from './types';
 import { spawnEnemy } from './EnemySystem';
 
 export const SCENARIOS = ['flight-basic', 'world-seam', 'combat-basic', 'abduction-start', 'falling-colonist',
-  'portal-ready', 'wave-near-complete', 'player-near-death', 'last-life', 'combat-showcase'] as const;
+  'portal-ready', 'wave-near-complete', 'player-near-death', 'last-life', 'combat-showcase', 'rescue-pickup'] as const;
 export type ScenarioName = typeof SCENARIOS[number];
 
 export function initializeScenario(ctx: CombatContext, name: ScenarioName): void {
@@ -13,6 +13,11 @@ export function initializeScenario(ctx: CombatContext, name: ScenarioName): void
   if (name === 'combat-basic') { s.schedule = waveSchedule(1, s.seed, s.difficulty); return; }
   p.invulnerable = 0;
   const c = s.colonists[0]!;
+  if (name === 'rescue-pickup') {
+    s.schedule = [{ at: 999, kind: 'interceptor', x: 1200, y: 64 }];
+    c.x = c.homeX = 400; c.y = ctx.terrain.height(c.x) + 1.5; c.walkDirection = 0;
+    p.x = p.previousX = c.x; p.y = p.previousY = c.y + 9;
+  }
   if (name === 'combat-showcase') {
     // Diagnostic composition using the same entities and AI as the main wave.
     p.invulnerable = 10;

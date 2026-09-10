@@ -3,7 +3,7 @@ import type { FlightState } from '../Simulation';
 import type { Terrain } from '../Terrain';
 
 export type EnemyKind = 'harvester' | 'wraith' | 'interceptor' | 'flux' | 'drone' | 'crossfire';
-export type ColonistStatus = 'ground' | 'targeted' | 'captured' | 'falling' | 'carried' | 'safe' | 'lost';
+export type ColonistStatus = 'ground' | 'targeted' | 'captured' | 'extracting' | 'falling' | 'carried' | 'safe' | 'lost';
 export interface Colonist {
   id: number; x: number; y: number; vy: number; status: ColonistStatus;
   owner: number | null; homeX: number; walkDirection: number; rescued: boolean;
@@ -13,7 +13,7 @@ export interface Enemy {
   hp: number; hitsRemaining: number; target: number | null; phase: 'seek' | 'descend' | 'lift' | 'hunt';
   cooldown: number; age: number; telegraph: number;
 }
-export type EventKind = 'spawn' | 'capture' | 'falling' | 'landing' | 'rescue' | 'delivery' | 'lost' | 'mutation'
+export type EventKind = 'spawn' | 'capture' | 'extraction' | 'falling' | 'landing' | 'rescue' | 'delivery' | 'lost' | 'mutation'
   | 'explosion' | 'impact' | 'bomb-charge' | 'bomb' | 'portal' | 'player-hit' | 'respawn' | 'victory' | 'defeat';
 export interface GameEvent { id: number; kind: EventKind; x: number; y: number; time: number }
 export interface SpawnEntry { at: number; kind: EnemyKind; x: number; y: number }

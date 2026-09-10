@@ -1,7 +1,7 @@
 {
   "backend": "webgpu",
-  "fps": 60.01600426780479,
-  "frameMs": 16.66222222222221,
+  "fps": 60.01600426780478,
+  "frameMs": 16.662222222222212,
   "drawCalls": 52,
   "triangles": 18663,
   "geometries": 68,
@@ -9,7 +9,7 @@
   "width": 1920,
   "height": 1080,
   "pixelRatio": 1,
-  "cameraX": 454.74587139264713,
+  "cameraX": 446.40222064241345,
   "viewWidth": 199.11111111111111,
   "seed": 8042,
   "scenario": "combat-basic",
@@ -43,12 +43,11 @@
     "bombCap": 3,
     "playerShotInterval": 0.15,
     "playerShotSpeed": 1,
-    "playerShotDamage": 1,
+    "enemyHitsToKill": 2,
     "enemyCount": 1,
     "enemySpeed": 1,
     "enemyFireRate": 1,
-    "enemyShotSpeed": 1,
-    "enemyHealth": 1
+    "enemyShotSpeed": 1
   },
   "controller": {
     "available": true,

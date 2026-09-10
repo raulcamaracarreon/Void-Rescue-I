@@ -67,9 +67,9 @@ Revisión 2026-09-09: ciclo de combate, colonos, rescate y oleada implementado y
 
 ## G. Pruebas y diagnóstico
 
-- [x] Las pruebas Vitest pasan (51 pruebas de núcleo, vuelo, combate, rescate, mando, dificultad, oleadas infinitas y récords).
-- [x] Las pruebas Playwright pasan en Chromium (36 recorridos: 18 WebGPU y 18 WebGL2).
-- [x] `window.__VOID_RESCUE__` expone estado, escenarios y métricas (diez escenarios, incluidos los seis obligatorios).
+- [x] Las pruebas Vitest pasan (60 pruebas de núcleo, vuelo, combate, rescate, mando, dificultad, oleadas infinitas y récords).
+- [x] Las pruebas Playwright pasan en Chromium (38 recorridos: 19 WebGPU y 19 WebGL2).
+- [x] `window.__VOID_RESCUE__` expone estado, escenarios y métricas (once escenarios, incluidos los seis obligatorios).
 - [x] Los seis escenarios deterministas requeridos cargan correctamente.
 - [x] Al menos una prueba usa controles reales y no sólo mutación directa del estado.
 - [x] Se generó y revisó al menos una captura del combate principal.
@@ -101,5 +101,15 @@ Revisión 2026-09-09: ciclo de combate, colonos, rescate y oleada implementado y
 - [x] Escenarios/avance manual de diagnóstico excluidos; errores de almacenamiento no bloquean el juego.
 - [x] Registros de otras instancias abiertas se combinan antes de consultar/guardar.
 - [x] Capturas de iniciales a 720p, resumen, tabla y segunda oleada revisadas.
+
+## J. Segundo modo: Rescatista
+
+- [x] La portada ofrece Defensivo y Rescatista y conserva la elección localmente.
+- [x] E/botón norte inicia extracción únicamente cerca de un colono válido en tierra.
+- [x] El colono asciende mediante un haz visible y pasa a transporte al alcanzar la nave.
+- [x] En Rescatista, la entrega sólo ocurre dentro de Fortaleza 01 con velocidad segura.
+- [x] Fortaleza 01 posee modelo, etiqueta espacial y marca propia en radar.
+- [x] La oleada exige evacuar a todos los supervivientes además de eliminar amenazas.
+- [x] Simulación, interfaz y recorrido real de extracción están cubiertos en WebGPU y WebGL2.
 
 Pendiente de evaluación humana: balance de sesiones largas y experiencia completa con el mando USB físico. Las pruebas no certifican rendimiento constante en todas las oleadas posibles.

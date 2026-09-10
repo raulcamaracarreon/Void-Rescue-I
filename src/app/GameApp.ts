@@ -14,9 +14,10 @@ import { Records } from '../game/Records';
 import type { PlayerRecord } from '../game/Records';
 import { RecordsPanel } from '../ui/RecordsPanel';
 import { wavePressure } from '../game/combat/Progression';
+import { missionMode } from '../game/MissionMode';
 
 function readPreferences(): Preferences {
-  const defaults: Preferences = { muted: false, volume: 0.45, reducedMotion: matchMedia('(prefers-reduced-motion: reduce)').matches, difficulty: 'normal' };
+  const defaults: Preferences = { muted: false, volume: 0.45, reducedMotion: matchMedia('(prefers-reduced-motion: reduce)').matches, difficulty: 'normal', missionMode: 'defense' };
   try {
     const data: unknown = JSON.parse(localStorage.getItem('void-rescue.preferences') ?? '{}');
     if (typeof data !== 'object' || !data) return defaults;
@@ -26,6 +27,7 @@ function readPreferences(): Preferences {
       reducedMotion: typeof value.reducedMotion === 'boolean' ? value.reducedMotion : defaults.reducedMotion,
       volume: typeof value.volume === 'number' && Number.isFinite(value.volume) ? Math.max(0, Math.min(1, value.volume)) : defaults.volume,
       difficulty: difficulty(value.difficulty),
+      missionMode: missionMode(value.missionMode),
     };
   } catch { return defaults; }
 }
@@ -40,7 +42,7 @@ export class GameApp {
   private readonly controllerPanel: ControllerPanel;
   private readonly records = new Records();
   private readonly recordsPanel: RecordsPanel;
-  private run: Pick<PlayerRecord, 'id' | 'pilot' | 'difficulty' | 'date'> | null = null;
+  private run: Pick<PlayerRecord, 'id' | 'pilot' | 'difficulty' | 'missionMode' | 'date'> | null = null;
   private mode: AppMode = 'title';
   private preferences = readPreferences();
   private previousTime = 0;
@@ -54,7 +56,7 @@ export class GameApp {
     const params = new URLSearchParams(location.search);
     const rawSeed = Number(params.get('seed') ?? CONFIG.defaultSeed);
     const seed = Number.isFinite(rawSeed) ? rawSeed >>> 0 : CONFIG.defaultSeed;
-    this.simulation = new Simulation(seed, 'flight-basic', this.preferences.difficulty);
+    this.simulation = new Simulation(seed, 'flight-basic', this.preferences.difficulty, this.preferences.missionMode);
     this.graphics = new FlightRenderer(canvas, seed, params.get('backend') === 'webgl2');
     this.graphics.renderer.onError = message => this.showError(new Error(message));
     this.graphics.renderer.onDeviceLost = info => this.showError(new Error(`Se perdió el dispositivo gráfico: ${info.message}`));
@@ -156,9 +158,9 @@ export class GameApp {
 
   start(): void {
     this.saveRecord();
-    this.run = { id: crypto.randomUUID(), pilot: this.records.pilot, difficulty: this.preferences.difficulty, date: new Date().toISOString() };
+    this.run = { id: crypto.randomUUID(), pilot: this.records.pilot, difficulty: this.preferences.difficulty, missionMode: this.preferences.missionMode, date: new Date().toISOString() };
     this.unlockAudio();
-    this.simulation = new Simulation(this.simulation.state.seed, 'combat-basic', this.preferences.difficulty);
+    this.simulation = new Simulation(this.simulation.state.seed, 'combat-basic', this.preferences.difficulty, this.preferences.missionMode);
     this.audio.resetEvents(); this.lastTeleport = 0;
     this.graphics.reset(this.simulation.state, false);
     this.setMode('playing');
@@ -166,7 +168,7 @@ export class GameApp {
 
   restart(): void {
     if (this.simulation.state.enabled) { this.start(); return; }
-    this.simulation = new Simulation(this.simulation.state.seed, this.simulation.state.enabled ? 'combat-basic' : 'flight-basic', this.preferences.difficulty);
+    this.simulation = new Simulation(this.simulation.state.seed, this.simulation.state.enabled ? 'combat-basic' : 'flight-basic', this.preferences.difficulty, this.preferences.missionMode);
     this.audio.resetEvents(); this.lastTeleport = 0;
     this.graphics.reset(this.simulation.state, false);
     this.setMode('playing');
@@ -174,7 +176,7 @@ export class GameApp {
 
   menu(): void {
     this.saveRecord(); this.run = null;
-    this.simulation = new Simulation(this.simulation.state.seed, 'flight-basic', this.preferences.difficulty);
+    this.simulation = new Simulation(this.simulation.state.seed, 'flight-basic', this.preferences.difficulty, this.preferences.missionMode);
     this.audio.resetEvents(); this.lastTeleport = 0;
     this.graphics.reset(this.simulation.state, true);
     this.setMode('title');
@@ -198,6 +200,7 @@ export class GameApp {
     }
     this.preferences = preferences;
     this.simulation.setDifficulty(preferences.difficulty);
+    this.simulation.setMissionMode(preferences.missionMode);
     this.audio.setMuted(preferences.muted);
     this.audio.setVolume(preferences.volume);
     this.ui.syncMuted(preferences.muted);
@@ -237,7 +240,7 @@ export class GameApp {
         if (!(SCENARIOS as readonly string[]).includes(name)) throw new Error(`Escenario no implementado: ${name}. Disponibles: ${SCENARIOS.join(', ')}`);
         if (!Number.isFinite(seed)) throw new Error('La semilla debe ser finita.');
         this.run = null;
-        this.simulation = new Simulation(seed, name as ScenarioName, this.preferences.difficulty);
+        this.simulation = new Simulation(seed, name as ScenarioName, this.preferences.difficulty, this.preferences.missionMode);
         this.audio.resetEvents(); this.lastTeleport = 0;
         this.graphics.reset(this.simulation.state, false);
         this.setMode('playing');

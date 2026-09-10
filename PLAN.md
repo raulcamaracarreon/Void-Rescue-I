@@ -4,6 +4,14 @@ Estado inicial: **por comenzar**.
 
 Estado actual (2026-09-09): **fases 0–4 implementadas y comprobadas; validación técnica de fase 6 completada**. La fase 5 tiene presentación funcional, pendiente acabado artístico realista y evaluación humana de audio/control. El ciclo de combate y rescate solicitado ya es jugable de extremo a extremo.
 
+## Segundo modo: Rescatista — 2026-09-10
+
+Implementado como alternativa seleccionable al modo Defensivo. Comparte la simulación de combate y progresión, pero añade extracción manual con E/botón norte, ascenso con haz tractor, transporte y entrega exclusiva en Fortaleza 01. La fortaleza tiene modelo procedural propio, etiqueta en el mundo y señal diferenciada en radar.
+
+- El estado y las preferencias distinguen `defense` y `rescue`; el modo persiste localmente y aparece en diagnóstico y nuevos récords sin invalidar registros anteriores.
+- En Rescatista, eliminar las amenazas no basta: todo colono vivo debe estar entregado antes de cerrar la oleada. Morir durante una extracción libera al colono en caída.
+- Cobertura: simulación de extracción, rechazo fuera del perímetro, entrega y condición de victoria; recorrido Playwright con entrada E real y capturas de selector/fortaleza/haz en WebGPU y WebGL2.
+
 ## Ajuste de ritmo y perfiles de dificultad — 2026-09-10
 
 Implementado: la dificultad deja de ser únicamente un multiplicador del reloj. Se añadieron Recluta, Relajado, Normal, Difícil, Experto y Sobremarcha. Normal asciende a 1.2× para un ritmo base más ágil; todos los perfiles conservan paso fijo, semilla y oleadas deterministas.
