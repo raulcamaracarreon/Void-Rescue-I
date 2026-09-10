@@ -11,13 +11,13 @@ export function wavePressure(wave: number): number {
 export function waveSchedule(wave: number, seed: number): SpawnEntry[] {
   if (wave === 1) return [
     { at: 2, kind: 'harvester', x: 400, y: 70 }, { at: 7, kind: 'interceptor', x: 510, y: 56 },
-    { at: 11, kind: 'harvester', x: 480, y: 76 }, { at: 17, kind: 'harvester', x: 640, y: 72 },
+    { at: 11, kind: 'harvester', x: 480, y: 76 }, { at: 14, kind: 'crossfire', x: 590, y: 68 }, { at: 17, kind: 'harvester', x: 640, y: 72 },
     { at: 23, kind: 'interceptor', x: 810, y: 66 }, { at: 29, kind: 'flux', x: 900, y: 64 },
-    { at: 34, kind: 'harvester', x: 1080, y: 76 }, { at: 41, kind: 'harvester', x: 1430, y: 72 },
+    { at: 34, kind: 'harvester', x: 1080, y: 76 }, { at: 38, kind: 'crossfire', x: 1280, y: 66 }, { at: 41, kind: 'harvester', x: 1430, y: 72 },
     { at: 47, kind: 'interceptor', x: 1680, y: 60 },
   ];
   const random = new Random((seed ^ Math.imul(wave, 0x9e3779b9)) >>> 0);
-  const kinds: EnemyKind[] = ['harvester', 'interceptor', 'harvester', 'wraith', 'interceptor', 'flux'];
+  const kinds: EnemyKind[] = ['harvester', 'interceptor', 'crossfire', 'harvester', 'wraith', 'interceptor', 'flux'];
   return Array.from({ length: Math.min(33, 9 + (wave - 1) * 2) }, (_, i) => ({
     at: 2 + i * 5 / wavePressure(wave), kind: kinds[i % kinds.length]!,
     x: (CONFIG.startX + 100 + i * 139 + random.next() * 100) % CONFIG.worldWidth,

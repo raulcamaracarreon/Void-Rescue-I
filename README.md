@@ -112,11 +112,19 @@ La prueba offline usa diez explosiones/bombas superpuestas y seis disparos a 48 
 - `src/core/`: reloj de 60 Hz, semilla y operaciones circulares.
 - `src/game/combat/`: colonos, IA, colisiones, daños, vidas, oleada y escenarios separados del render.
 - `src/input/`: acciones centralizadas, zona muerta y navegación.
-- `src/render/`: modelos originales, cámara continua y TSL en propulsores, portal, impactos y bomba. Pools de 768 chispas, 128 fragmentos, 96 nubes luminosas y 160 partículas auxiliares; ondas y núcleos TSL.
+- `src/render/`: modelos originales, cámara continua y TSL en propulsores, portal, impactos y bomba. Pools de 1536 chispas, 128 fragmentos, 96 nubes luminosas y 160 partículas auxiliares; ondas y núcleos TSL.
 - `src/audio/`: efectos Web Audio diferenciados, panorámica circular, límite de voces y compresor maestro.
 - `src/ui/`: radar, avisos, instrumentos y resumen; `src/app/`: coordinación y diagnóstico.
 
 Mundo circular de 2400 unidades, proyectiles y rescate con barrido para movimientos rápidos y costura. El límite inferior sigue el terreno: tocarlo no destruye la nave. Altura máxima 82. Colonos entregados a salvo de nuevas capturas. Portal de demostración sin segundo mundo. Parámetros principales en `config.ts` y `combat/types.ts`; progresión y apariciones en `combat/Progression.ts`; récords en `game/Records.ts`.
+
+## Ajuste de cámara y combate — 2026-09-10
+
+La cámara ahora coloca la nave en el primer cuarto horizontal al orientarse a la derecha y en el tercer cuarto al orientarse a la izquierda. El recorrido hacia esa composición es rápido y continuo, incluso al cruzar la costura del mundo. El pequeño adelanto de velocidad no altera esa referencia visual.
+
+Los disparos del jugador sólo pueden dañar objetivos dentro de la ventana principal de juego; los contactos que sólo aparecen en el radar no reciben colisiones. Las destrucciones abandonan el patrón espiral: usan dispersión radial determinista, caótica y breve que alcanza el campo visible. Las apariciones invierten el efecto: partículas cian se contraen desde la pantalla hasta la nave antes de activarla.
+
+Se sumó **Crossfire**, una cañonera horizontal de tres impactos que dispara dos proyectiles a la vez, uno vertical hacia arriba y otro hacia abajo. Aparece dos veces más en la primera oleada y entra en las composiciones de las siguientes.
 
 Geometría y sonidos procedurales originales. Ningún gráfico/sonido de las referencias se carga. Sin React, motor físico, ECS externo, workers, backend, telemetría, claves o CDN. Proyectiles con cadencia y vida limitadas; las mediciones no justifican un pool adicional de simulación.
 

@@ -11,10 +11,13 @@ export class CameraRig {
     this.x = playerX - (title ? 42 : 0);
   }
 
-  update(playerX: number, velocity: number, facing: number, dt: number, reducedMotion: boolean): void {
+  update(playerX: number, velocity: number, facing: number, viewWidth: number, dt: number, reducedMotion: boolean): void {
     this.playerContinuousX = nearCameraX(playerX, this.playerContinuousX, CONFIG.worldWidth);
-    const lookAhead = reducedMotion ? 0 : facing * 9 + velocity * 0.17;
+    // The ship occupies the first or third quarter of the view, matching the
+    // original combat framing.  Velocity only adds a very small lead so it
+    // never displaces that intentional composition.
+    const lookAhead = facing * viewWidth * 0.25 + (reducedMotion ? 0 : velocity * 0.035);
     const target = this.playerContinuousX + lookAhead;
-    this.x += (target - this.x) * (1 - Math.exp(-5.5 * Math.min(dt, 0.1)));
+    this.x += (target - this.x) * (1 - Math.exp(-(reducedMotion ? 6 : 14) * Math.min(dt, 0.1)));
   }
 }

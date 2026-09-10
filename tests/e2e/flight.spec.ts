@@ -102,7 +102,9 @@ test('costura circular con controles reales y radar dividido', async ({ page }, 
   await page.keyboard.up('KeyD');
   const after = await state(page);
   expect(after.player.x).toBeLessThan(35);
-  expect(Math.abs(after.camera.x - before.camera.x)).toBeLessThan(50);
+  // The ship now moves to the first quarter of the view while facing right;
+  // continuity through the seam matters, not the former centered offset.
+  expect(Math.abs(after.camera.x - before.camera.x)).toBeLessThan(85);
   expect(after.camera.radarSegments).toHaveLength(2);
   await page.screenshot({ path: `${output}/${info.project.name}-seam.png` });
 });

@@ -4,12 +4,12 @@
     "survivors": 8,
     "lost": 0,
     "rescued": 0,
-    "score": 5540,
-    "time": 51,
-    "bonus": 3690
+    "score": 6100,
+    "time": 50.5,
+    "bonus": 3700
   },
-  "kills": 9,
-  "spawnIndex": 9,
-  "totalSpawns": 9,
+  "kills": 11,
+  "spawnIndex": 11,
+  "totalSpawns": 11,
   "lives": 3
 }

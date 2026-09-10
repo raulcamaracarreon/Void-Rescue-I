@@ -112,7 +112,7 @@ test('oleada principal completa con teclado sin modificar la simulación', async
 test('siluetas de todas las familias, portal y efectos durante combate', async ({ page }, info) => {
   await page.evaluate(() => window.__VOID_RESCUE__!.loadScenario('combat-showcase'));
   await page.waitForFunction(() => window.__VOID_RESCUE__!.getState().frame >= 8);
-  expect(new Set((await getState(page)).enemies.map(e => e.kind)).size).toBe(5);
+  expect(new Set((await getState(page)).enemies.map(e => e.kind)).size).toBe(6);
   await page.screenshot({ path: `${output}/${info.project.name}-enemy-families.png` });
   await page.keyboard.down('Space');
   await page.waitForFunction(() => window.__VOID_RESCUE__!.getState().frame > 240);

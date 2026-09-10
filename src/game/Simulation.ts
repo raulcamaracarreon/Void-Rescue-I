@@ -86,7 +86,7 @@ export class Simulation {
       updateWave(this.context, dt, Boolean(input.portal && !this.portalHeld));
       updateEnemies(this.context, dt);
       updateBomb(this.context, dt);
-      updateProjectiles(this.context, dt);
+      updateProjectiles(this.context, dt, input.view);
       updateColonists(this.context, dt);
       resolveWave(this.context);
     } else {

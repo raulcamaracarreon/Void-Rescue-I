@@ -46,12 +46,16 @@ function nearest(ctx: CombatContext, x: number): number {
   return Math.min(CONFIG.worldWidth, ...ctx.state.enemies.map(e => Math.abs(deltaX(x, e.x))));
 }
 
-export function updateProjectiles(ctx: CombatContext, dt: number): void {
+export function updateProjectiles(ctx: CombatContext, dt: number, view?: FlightInput['view']): void {
   const s = ctx.state;
+  const viewCenter = view?.centerX ?? wrapX(s.player.x + s.player.facing * CONFIG.viewHeight * 16 / 9 / 4, CONFIG.worldWidth);
+  const viewWidth = view?.width ?? CONFIG.viewHeight * 16 / 9;
   for (const shot of s.shots) {
     const dx = shot.vx * dt, dy = shot.vy * dt;
     if (shot.team === 'player') {
-      const hits = s.enemies.filter(e => e.telegraph <= 0).map(enemy => ({ enemy,
+      // As in the reference game, player shots only resolve against enemies in
+      // the main viewport, never against a radar-only contact.
+      const hits = s.enemies.filter(e => e.telegraph <= 0 && Math.abs(deltaX(viewCenter, e.x)) <= viewWidth / 2 + COMBAT.enemyRadius[e.kind]).map(enemy => ({ enemy,
         t: sweptHit(shot.x, shot.y, dx, dy, enemy, COMBAT.enemyRadius[enemy.kind] + 0.4) }))
         .filter(hit => hit.t !== null).sort((a, b) => a.t! - b.t!);
       if (hits[0]) { damageEnemy(ctx, hits[0].enemy, 1); shot.remaining = 0; }

@@ -46,6 +46,15 @@ export function enemyModel(kind: EnemyKind): Group {
     const ring = new Mesh(new TorusGeometry(3.8, 0.55, 6, 16), armor); ring.rotation.x = 0.3; group.add(ring);
     for (const x of [-4.2, 4.2]) box(group, [1.3, 5.8, 1.6], [x, 0, 0], plates);
     const axis = new Mesh(new CylinderGeometry(0.45, 0.45, 8, 6), plates); group.add(axis);
+  } else if (kind === 'crossfire') {
+    // A horizontal, twin-core gunship makes its vertical paired barrage legible.
+    const body = new Mesh(new BoxGeometry(7, 1.45, 1.8), armor); group.add(body);
+    const core = new Mesh(new CylinderGeometry(0.75, 0.75, 2.25, 8), hot); core.rotation.z = Math.PI / 2; group.add(core);
+    for (const x of [-2.5, 2.5]) {
+      box(group, [1.1, 3.7, 1.1], [x, 0, 0], plates);
+      const turret = new Mesh(new SphereGeometry(0.46, 8, 6), hot); turret.position.set(x, 2.05, 0); group.add(turret);
+      const lowerTurret = turret.clone(); lowerTurret.position.y = -2.05; group.add(lowerTurret);
+    }
   } else {
     const core = new Mesh(new OctahedronGeometry(1.4, 0), hot); group.add(core);
     box(group, [3.2, 0.25, 0.5], [0, 0, 0], armor);

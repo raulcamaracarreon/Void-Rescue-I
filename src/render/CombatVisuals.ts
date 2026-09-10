@@ -31,7 +31,7 @@ export class CombatVisuals {
 
   constructor() {
     this.group.add(this.destruction.group);
-    for (const kind of ['harvester', 'wraith', 'interceptor', 'flux', 'drone'] as const) this.templates.set(kind, enemyModel(kind));
+    for (const kind of ['harvester', 'wraith', 'interceptor', 'flux', 'drone', 'crossfire'] as const) this.templates.set(kind, enemyModel(kind));
     for (let i = 0; i < 3; i++) {
       const ring = new Mesh(new TorusGeometry(7 - i * 0.5, 0.22, 8, 48), emission(i === 1 ? 0xb590ff : 0x98f6eb));
       ring.position.z = -i * 1.8; ring.rotation.y = 0.15 + i * 0.09; this.portal.add(ring);
@@ -80,7 +80,7 @@ export class CombatVisuals {
       let model = this.entities.get(e.id);
       if (!model || model.userData.kind !== e.kind) { if (model) this.group.remove(model); model = this.templates.get(e.kind)!.clone(); model.userData.kind = e.kind; this.entities.set(e.id, model); this.group.add(model); }
       model.position.set(x(e.x), e.y, 1); model.visible = visible(e.x);
-      model.scale.setScalar(e.telegraph > 0 ? Math.max(0.1, 1 - e.telegraph / 0.8) : 1);
+      model.scale.setScalar(e.telegraph > 0 ? Math.max(0.1, 1 - e.telegraph / 0.65) : 1);
       if (e.kind === 'interceptor') model.scale.x *= e.vx >= 0 ? 1 : -1;
       model.rotation.z = reduced ? 0 : e.kind === 'flux' ? Math.sin(e.age) * 0.1 : Math.max(-0.2, Math.min(0.2, e.vy * 0.01));
       const c = state.colonists.find(c => c.id === e.target);
@@ -113,7 +113,7 @@ export class CombatVisuals {
       if (age < 0 || age > 1.1) continue;
       const locationX = nearCameraX(event.x, cameraX, CONFIG.worldWidth);
       const tint = new Color(this.eventColor(event));
-      if (['bomb', 'bomb-charge', 'portal', 'rescue', 'delivery', 'mutation', 'spawn', 'impact', 'explosion', 'player-hit'].includes(event.kind) && ringIndex < this.rings.length) {
+      if (['bomb', 'bomb-charge', 'portal', 'rescue', 'delivery', 'mutation', 'impact'].includes(event.kind) && ringIndex < this.rings.length) {
         const ring = this.rings[ringIndex++]!;
         const size = event.kind === 'bomb' ? 4 + age * 130 : event.kind === 'bomb-charge' ? 4 - age * 8 : event.kind === 'impact' ? 0.4 + age * 3 : 2 + age * 9;
         ring.visible = size > 0; ring.position.set(locationX, event.y, 13); ring.scale.setScalar(Math.max(0.01, size));

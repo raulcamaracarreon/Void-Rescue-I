@@ -1,33 +1,33 @@
 {
   "backend": "webgpu",
-  "fps": 56.487202118270076,
-  "frameMs": 17.703125,
-  "drawCalls": 110,
-  "triangles": 24703,
-  "geometries": 109,
+  "fps": 58.0720092915215,
+  "frameMs": 17.219999999999995,
+  "drawCalls": 68,
+  "triangles": 29191,
+  "geometries": 105,
   "textures": 3,
   "width": 1920,
   "height": 1080,
   "pixelRatio": 1,
-  "cameraX": 368.6008928782908,
+  "cameraX": 409.7417991915647,
   "viewWidth": 199.11111111111111,
   "seed": 8042,
   "scenario": "combat-showcase",
   "simulationHz": 60,
-  "frame": 33,
+  "frame": 30,
   "entities": {
     "player": 1,
     "enemies": 0,
     "colonists": 8,
     "projectiles": 0,
-    "particles": 562
+    "particles": 1662
   },
   "wave": {
     "number": 1,
     "pressure": 1,
     "ranked": false,
     "outcome": "active",
-    "score": 1150,
+    "score": 1425,
     "delivered": 1,
     "remainingSpawns": 0
   },
@@ -110,6 +110,6 @@
       }
     }
   },
-  "droppedSeconds": 0.06670000000000004,
+  "droppedSeconds": 0.08329999999999996,
   "audioError": null
 }

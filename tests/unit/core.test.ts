@@ -96,11 +96,18 @@ describe('vuelo', () => {
       for (let i = 0; i < 180; i++) {
         const previous = camera.x;
         s.update(1 / 60, { x: direction, y: 0, fire: false });
-        camera.update(s.state.player.x, s.state.player.vx, s.state.player.facing, 1 / 60, false);
-        expect(Math.abs(camera.x - previous)).toBeLessThan(2);
+        camera.update(s.state.player.x, s.state.player.vx, s.state.player.facing, 200, 1 / 60, false);
+        expect(Math.abs(camera.x - previous)).toBeLessThan(14);
       }
       expect(s.state.laps).toBe(1);
     }
+  });
+  it('encuadra la nave en el primer o tercer cuarto según su orientación', () => {
+    const camera = new CameraRig(400), width = 200;
+    for (let i = 0; i < 30; i++) camera.update(400, 0, 1, width, 1 / 60, false);
+    expect(400 - camera.x + width / 2).toBeCloseTo(width * 0.25, 0);
+    for (let i = 0; i < 30; i++) camera.update(400, 0, -1, width, 1 / 60, false);
+    expect(400 - camera.x + width / 2).toBeCloseTo(width * 0.75, 0);
   });
   it('dispara hacia la orientación, limita cadencia y retira proyectiles', () => {
     const s = new Simulation();

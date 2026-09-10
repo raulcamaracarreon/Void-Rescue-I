@@ -130,6 +130,25 @@ describe('combate y oleada', () => {
     const flux = spawnEnemy(s.context, 'flux', 700, 55, 0); flux.cooldown = 0;
     tick(s, 1); expect(s.state.enemies.some(e => e.kind === 'drone')).toBe(true);
   });
+  it('no deja que un disparo alcance un contacto que sólo está en el radar', () => {
+    const s = scenario();
+    s.state.colonists = [];
+    const enemy = spawnEnemy(s.context, 'harvester', s.state.player.x + 180, s.state.player.y, 0);
+    s.state.shots.push({ id: 99001, x: s.state.player.x + 5, y: s.state.player.y, vx: 180, vy: 0, remaining: 1.1, team: 'player' });
+    tick(s, 60, { x: 0, y: 0, fire: false, view: { centerX: s.state.player.x + 50, width: 200 } });
+    expect(s.state.enemies.some(e => e.id === enemy.id)).toBe(true);
+    expect(s.state.kills).toBe(0);
+  });
+  it('Crossfire dispara dos proyectiles verticales simultáneos', () => {
+    const s = scenario();
+    const enemy = spawnEnemy(s.context, 'crossfire', s.state.player.x + 60, s.state.player.y, 0);
+    enemy.cooldown = 0;
+    tick(s, 1);
+    const shots = s.state.shots.filter(shot => shot.team === 'enemy');
+    expect(shots).toHaveLength(2);
+    expect(shots.map(shot => shot.vx)).toEqual([0, 0]);
+    expect(shots.map(shot => Math.sign(shot.vy)).sort()).toEqual([-1, 1]);
+  });
   it('todos los escenarios son reproducibles con la misma semilla y entradas', () => {
     for (const name of SCENARIOS) {
       const a = scenario(name), b = scenario(name);

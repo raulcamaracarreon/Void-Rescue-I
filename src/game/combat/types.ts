@@ -2,7 +2,7 @@ import type { Random } from '../../core/Random';
 import type { FlightState } from '../Simulation';
 import type { Terrain } from '../Terrain';
 
-export type EnemyKind = 'harvester' | 'wraith' | 'interceptor' | 'flux' | 'drone';
+export type EnemyKind = 'harvester' | 'wraith' | 'interceptor' | 'flux' | 'drone' | 'crossfire';
 export type ColonistStatus = 'ground' | 'targeted' | 'captured' | 'falling' | 'carried' | 'safe' | 'lost';
 export interface Colonist {
   id: number; x: number; y: number; vy: number; status: ColonistStatus;
@@ -37,9 +37,9 @@ export const COMBAT = {
   colonistX: [400, 480, 640, 820, 1080, 1430, 1790, 2160],
   gravity: 5.5, safeFallSpeed: 9, rescueRadius: 5.5, deliverySpeed: 22,
   descentSpeed: 8, liftSpeed: 5, abductionY: 83, playerRadius: 2.4,
-  enemyRadius: { harvester: 3.3, wraith: 3.5, interceptor: 3, flux: 4.5, drone: 1.4 },
-  enemyHp: { harvester: 2, wraith: 3, interceptor: 2, flux: 8, drone: 1 },
-  points: { harvester: 150, wraith: 250, interceptor: 200, flux: 500, drone: 50 },
+  enemyRadius: { harvester: 3.3, wraith: 3.5, interceptor: 3, flux: 4.5, drone: 1.4, crossfire: 3.4 },
+  enemyHp: { harvester: 2, wraith: 3, interceptor: 2, flux: 8, drone: 1, crossfire: 3 },
+  points: { harvester: 150, wraith: 250, interceptor: 200, flux: 500, drone: 50, crossfire: 275 },
   catchPoints: 500, deliveryPoints: 500, survivorBonus: 300, portalBonus: 1000,
   respawnSeconds: 1.6, invulnerability: 3, bombCharge: 0.25,
 } as const;

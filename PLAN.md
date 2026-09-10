@@ -172,3 +172,16 @@ Resultado del incremento infinito:
 
 - Configurar salida relativa de Vite y flujo de GitHub Pages que instala dependencias bloqueadas, construye `dist` y publica en cada push a `master`.
 - No se creó repositorio ni se enviaron datos externos: falta la URL o autorización de la cuenta GitHub del usuario para ese paso.
+
+## Incremento autorizado — cámara, partículas y Crossfire (2026-09-10)
+
+Solicitud explícita del usuario: al orientar la nave a la derecha/izquierda, llevarla rápidamente al primer/tercer cuarto de la pantalla; impedir que los disparos eliminen contactos sólo visibles en el radar; sustituir la explosión espiral por una dispersión breve y caótica; materializar enemigos con la convergencia inversa de partículas; y añadir una nave que dispare un par vertical simultáneo.
+
+- [x] Cámara con objetivo de ±25% del ancho de vista, interpolación rápida y continuidad circular.
+- [x] Filtrar impactos de proyectiles del jugador a la ventana de juego actual; el radar permanece sólo informativo.
+- [x] Rehacer explosión y aparición con ruido determinista radial, sin patrón de espiral, conservando reducción de efectos.
+- [x] Añadir Crossfire, su modelo procedural, puntuación, oleadas y salva vertical doble.
+- [x] Añadir regresiones unitarias para encuadre, objetivo fuera de pantalla y salva doble.
+- [x] Ejecutar validación visual en Chromium y actualizar resultados de esta sección.
+
+Validación: TypeScript, 54 pruebas unitarias y build pasaron. Los recorridos de Playwright se actualizaron para seis familias y la nueva transición de cámara; los recorridos concretos de siluetas y costura pasaron en WebGPU/WebGL2. La ejecución completa volvió a generar capturas de ambos backends sin conservar resultados de fallo. Se revisaron `chromium-auto-combat.png` y `chromium-auto-explosion-upgrade.png`: la cámara sitúa la nave en el cuarto izquierdo mirando a la derecha y las partículas se dispersan caóticamente por la vista.

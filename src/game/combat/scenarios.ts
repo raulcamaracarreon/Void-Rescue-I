@@ -21,6 +21,7 @@ export function initializeScenario(ctx: CombatContext, name: ScenarioName): void
     spawnEnemy(ctx, 'wraith', 320, 72, 0);
     spawnEnemy(ctx, 'interceptor', 420, 68, 0);
     spawnEnemy(ctx, 'flux', 430, 44, 0);
+    spawnEnemy(ctx, 'crossfire', 450, 62, 0);
     spawnEnemy(ctx, 'drone', 395, 28, 0);
     const falling = s.colonists[1]!;
     falling.x = 410; falling.y = 33; falling.status = 'falling';

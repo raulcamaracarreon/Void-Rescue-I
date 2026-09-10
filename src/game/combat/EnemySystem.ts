@@ -6,7 +6,7 @@ import { deltaX, distance } from './spatial';
 import { releaseTarget } from './ColonistSystem';
 import { wavePressure } from './Progression';
 
-export function spawnEnemy(ctx: CombatContext, kind: EnemyKind, x: number, y: number, telegraph = 0.8): Enemy {
+export function spawnEnemy(ctx: CombatContext, kind: EnemyKind, x: number, y: number, telegraph = 0.65): Enemy {
   const enemy: Enemy = { id: ctx.nextId(), kind, x: wrapX(x, CONFIG.worldWidth), y, vx: 0, vy: 0,
     hp: COMBAT.enemyHp[kind], target: null, phase: kind === 'harvester' ? 'seek' : 'hunt',
     cooldown: 2 + ctx.random.next(), age: 0, telegraph };
@@ -52,13 +52,13 @@ export function updateEnemies(ctx: CombatContext, dt: number): void {
     } else {
       const dx = deltaX(e.x, p.x), dy = p.y - e.y;
       const rage = s.colonyLost ? 1.25 : 1;
-      const kindSpeed = e.kind === 'wraith' ? 24 : e.kind === 'interceptor' ? 19 : e.kind === 'drone' ? 26 : 7;
+      const kindSpeed = e.kind === 'wraith' ? 24 : e.kind === 'interceptor' ? 19 : e.kind === 'crossfire' ? 15 : e.kind === 'drone' ? 26 : 7;
       const length = Math.hypot(dx, dy) || 1;
       if (e.kind === 'flux') {
         e.x = wrapX(e.x + Math.sign(dx) * kindSpeed * dt, CONFIG.worldWidth);
         e.y += (58 + Math.sin(e.age * 0.8) * 7 - e.y) * dt * 0.6;
       } else {
-        const strafe = e.kind === 'interceptor' && Math.abs(dx) < 30 ? -1 : 1;
+        const strafe = (e.kind === 'interceptor' || e.kind === 'crossfire') && Math.abs(dx) < 30 ? -1 : 1;
         e.x = wrapX(e.x + dx / length * kindSpeed * rage * dt * strafe, CONFIG.worldWidth);
         const jitter = e.kind === 'wraith' ? Math.sin(e.age * 7 + e.id) * 7 : 0;
         e.y += (dy / length * kindSpeed * 0.8 * rage + jitter) * dt;
@@ -66,9 +66,17 @@ export function updateEnemies(ctx: CombatContext, dt: number): void {
       e.y = Math.max(ctx.terrain.height(e.x) + 6, Math.min(CONFIG.maxAltitude, e.y));
       e.cooldown -= dt;
       if (e.cooldown <= 0 && p.alive) {
-        e.cooldown = e.kind === 'flux' ? 5 : 2.8 + ctx.random.next();
+        e.cooldown = e.kind === 'flux' ? 5 : e.kind === 'crossfire' ? 2.1 + ctx.random.next() * 0.6 : 2.8 + ctx.random.next();
         if (e.kind === 'flux' && s.enemies.filter(e => e.kind === 'drone').length < 3) {
           spawnEnemy(ctx, 'drone', e.x, e.y - 4, 0.4);
+        } else if (e.kind === 'crossfire' && distance(e, p) < 135) {
+          // This enemy's hull is horizontal; its paired shots travel along the
+          // perpendicular vertical axis, independently of the player's position.
+          const speed = 34 * pressure;
+          s.shots.push(
+            { id: ctx.nextId(), x: e.x, y: e.y, vx: 0, vy: speed, remaining: 4, team: 'enemy' },
+            { id: ctx.nextId(), x: e.x, y: e.y, vx: 0, vy: -speed, remaining: 4, team: 'enemy' },
+          );
         } else if (e.kind !== 'drone' && distance(e, p) < 135) {
           const speed = 38 * pressure;
           s.shots.push({ id: ctx.nextId(), x: e.x, y: e.y, vx: dx / length * speed, vy: dy / length * speed,
