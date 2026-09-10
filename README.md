@@ -21,6 +21,12 @@ npm run preview -- --port 4173
 
 [Vista previa de producción](http://127.0.0.1:4173). No se ha desplegado a servicios externos.
 
+## Compartir en GitHub Pages
+
+El repositorio incluye `.github/workflows/deploy-pages.yml`. Al crear un repositorio en GitHub, subir la rama `master` y seleccionar **Settings → Pages → Source: GitHub Actions**, cada push construye y publica el juego. La dirección resultante será `https://USUARIO.github.io/NOMBRE-DEL-REPOSITORIO/`.
+
+No hace falta que quien juegue instale nada: abre ese enlace en un navegador moderno. Los récords son locales a cada navegador y no se comparten entre jugadores. GitHub Pages sirve el juego estático; no incluye cuentas, clasificación global ni guardado de partidas en servidor.
+
 ## Cómo jugar
 
 Protege la colonia y elimina todas las amenazas. En el radar: triángulos enemigos, rectángulos colonos, `!` objetivo amenazado, `↑` captura, `↓` caída y círculo del portal.

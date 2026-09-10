@@ -167,3 +167,8 @@ Resultado del incremento infinito:
 - Producción comprobada en ambos backends: inicio, movimiento, pausa, apertura/cierre de tabla con Escape conservando pausa, iniciales persistentes y ausencia del diagnóstico. Sin errores observados.
 - Capturas de título 720p, tabla local, informe y oleada 2 revisadas. Sin referencias ni dependencias modificadas. Build ~966 kB JS / ~272 kB gzip; permanece el aviso de tamaño.
 - Pendiente balance humano de partidas largas; no se afirma una sesión infinita con mando físico ni rendimiento constante a cualquier carga.
+
+## Preparación autorizada para publicar — 2026-09-09
+
+- Configurar salida relativa de Vite y flujo de GitHub Pages que instala dependencias bloqueadas, construye `dist` y publica en cada push a `master`.
+- No se creó repositorio ni se enviaron datos externos: falta la URL o autorización de la cuenta GitHub del usuario para ese paso.
