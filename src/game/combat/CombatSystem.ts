@@ -16,6 +16,13 @@ export function damageEnemy(ctx: CombatContext, enemy: Enemy, damage: number): v
   }
 }
 
+function hitEnemyWithCannon(ctx: CombatContext, enemy: Enemy): void {
+  if (enemy.hp <= 0 || enemy.telegraph > 0) return;
+  enemy.hitsRemaining--;
+  if (enemy.hitsRemaining <= 0) damageEnemy(ctx, enemy, enemy.hp);
+  else ctx.emit('impact', enemy.x, enemy.y);
+}
+
 export function hitPlayer(ctx: CombatContext): void {
   const s = ctx.state, p = s.player;
   if (!p.alive || p.invulnerable > 0 || s.outcome !== 'active') return;
@@ -77,10 +84,7 @@ export function updateProjectiles(ctx: CombatContext, dt: number, view?: FlightI
       ]
         .filter(hit => hit.t !== null).sort((a, b) => a.t! - b.t!);
       if (hits[0]) {
-        // Defender shots are deliberately lethal on contact. Enemy endurance
-        // remains useful for bombs and scripted damage, but never makes an
-        // on-screen target absorb several successful player hits.
-        if (hits[0].type === 'enemy') damageEnemy(ctx, hits[0].target, hits[0].target.hp);
+        if (hits[0].type === 'enemy') hitEnemyWithCannon(ctx, hits[0].target);
         else damageColonist(ctx, hits[0].target);
         shot.remaining = 0;
       }

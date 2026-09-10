@@ -10,7 +10,7 @@ export interface Colonist {
 }
 export interface Enemy {
   id: number; kind: EnemyKind; x: number; y: number; vx: number; vy: number;
-  hp: number; target: number | null; phase: 'seek' | 'descend' | 'lift' | 'hunt';
+  hp: number; hitsRemaining: number; target: number | null; phase: 'seek' | 'descend' | 'lift' | 'hunt';
   cooldown: number; age: number; telegraph: number;
 }
 export type EventKind = 'spawn' | 'capture' | 'falling' | 'landing' | 'rescue' | 'delivery' | 'lost' | 'mutation'

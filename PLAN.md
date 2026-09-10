@@ -14,7 +14,7 @@ Implementado: la dificultad deja de ser únicamente un multiplicador del reloj. 
 
 ## Equilibrio de impactos — 2026-09-10
 
-Implementado: cualquier impacto directo del cañón del defensor destruye al enemigo tocado, sin excepciones por familia ni dificultad. La nave del jugador mantiene su regla de una colisión enemiga/proyectil por vida; la asimetría anterior de varios impactos para naves hostiles se elimina.
+Equilibrio actualizado: Recluta/Relajado destruyen con un impacto; Normal/Difícil requieren dos; Experto, tres; y Sobremarcha, cuatro. El contador se aplica de forma uniforme a cada familia de enemigo y se reinicia al mutar un Harvester en Wraith. La bomba conserva su eliminación total dentro del área. La nave del jugador mantiene su regla de una colisión enemiga/proyectil por vida.
 
 Codex debe actualizar casillas, notas y resultados sin borrar el historial de decisiones.
 

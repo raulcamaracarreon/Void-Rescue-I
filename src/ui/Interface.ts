@@ -111,7 +111,7 @@ export class Interface {
     this.syncMuted(preferences.muted);
     const difficultySelects = [...root.querySelectorAll<HTMLSelectElement>('.difficulty-select')];
     for (const select of difficultySelects) {
-      select.innerHTML = Object.entries(DIFFICULTIES).map(([id, item]) => `<option value="${id}">${item.label} · ${item.speed}× · ${item.startingLives} naves</option>`).join('');
+      select.innerHTML = Object.entries(DIFFICULTIES).map(([id, item]) => `<option value="${id}">${item.label} · ${item.speed}× · ${item.startingLives} naves · ${item.enemyHitsToKill} impactos</option>`).join('');
       select.value = preferences.difficulty;
       select.addEventListener('change', () => {
         difficultySelects.forEach(other => { other.value = select.value; });
