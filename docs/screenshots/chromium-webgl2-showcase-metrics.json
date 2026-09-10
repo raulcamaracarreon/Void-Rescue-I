@@ -1,9 +1,9 @@
 {
   "backend": "webgl2",
-  "fps": 60.014003267429096,
-  "frameMs": 16.66277777777777,
+  "fps": 60.01600426780474,
+  "frameMs": 16.662222222222223,
   "drawCalls": 84,
-  "triangles": 22675,
+  "triangles": 22551,
   "geometries": 107,
   "textures": 3,
   "width": 1920,
@@ -19,8 +19,8 @@
     "player": 1,
     "enemies": 4,
     "colonists": 7,
-    "projectiles": 4,
-    "particles": 162
+    "projectiles": 3,
+    "particles": 131
   },
   "wave": {
     "number": 1,
@@ -86,6 +86,6 @@
       }
     }
   },
-  "droppedSeconds": 0.1165999999999999,
+  "droppedSeconds": 0,
   "audioError": null
 }
