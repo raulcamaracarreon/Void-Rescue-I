@@ -221,3 +221,11 @@ Evita una interfaz genérica de aplicación web. Debe sentirse como instrumentac
 - Guardado persistente, salvo preferencias locales.
 - Móvil táctil.
 
+
+## Ampliación autorizada: modo infinito y récords — 2026-09-09
+
+El usuario amplía el vertical de una oleada a una partida sin oleada final. El cierre de cada oleada lleva a un resumen intermedio; confirmar continúa con puntos y vidas acumulados. Derrota al agotar las naves. Nuevos colonos y portal por oleada, reposición de una bomba (máximo tres), una nave de reserva cada tres victorias (máximo tres).
+
+La primera oleada se conserva; las siguientes aumentan cantidad, velocidad y frecuencia de ataque con población acotada y presión asintótica. No se añaden familias ni campaña. Reglas y fórmula en README/Progression.ts.
+
+Récords locales top 10 por partida, iniciales de tres caracteres, puntos, oleada alcanzada, dificultad mínima usada y fecha. Selección de iniciales y navegación completa con joypad o teclado. Se guardan resultados, sin reanudación del estado de juego ni cuentas.

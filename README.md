@@ -1,6 +1,6 @@
 # VOID RESCUE
 
-Arcade 2.5D de defensa y rescate espacial. Incluye una oleada completa con teclado y joypad: ocho colonos, abductores, mutación, caída, rescate, entrega, combate, bomba, portal, vidas y resumen. El acabado artístico y la evaluación humana del control/audio siguen pendientes.
+Arcade 2.5D de defensa y rescate espacial. Incluye oleadas sin final, dificultad creciente y récords locales, con teclado y joypad: ocho colonos, abductores, mutación, caída, rescate, entrega, combate, bomba, portal, vidas y resumen. El acabado artístico y la evaluación humana del control/audio siguen pendientes.
 
 ## Ejecutar
 
@@ -29,9 +29,9 @@ Protege la colonia y elimina todas las amenazas. En el radar: triángulos enemig
 2. Al destruir al captor, **intercepta con la nave al colono en caída**. Una caída corta puede ser segura; una caída rápida es mortal.
 3. Con un colono a bordo, baja hasta el terreno y frena. La entrega es automática cerca del suelo, por debajo de 22 u/s horizontales y 12 u/s verticales. Dejar de empujar frena; el empuje contrario frena más rápido.
 4. La primera entrega habilita el portal. Pulsa E o norte cerca del anillo: salta medio planeta, recibe protección breve y +1000 por el primer salto. Recarga de 5 s; no elimina amenazas ni apariciones pendientes.
-5. La oleada termina al eliminar enemigos y resolver capturas, caídas y transportes. Perder las tres naves termina la misión. Ambos casos muestran resumen y permiten volver a jugar.
+5. La oleada termina al eliminar enemigos y resolver capturas, caídas y transportes. Perder las tres naves termina la misión. El resumen de victoria permite continuar a la siguiente oleada; la derrota permite iniciar otra partida.
 
-Oleada principal: cinco Harvesters, tres Interceptors y un Flux Node, escalonados entre los segundos 2 y 47. Flux genera hasta tres drones activos. Cada abducción completada puede producir un Wraith. Se comienza con tres naves y dos bombas; reaparición en 1.6 s con protección de 3 s.
+Primera oleada: cinco Harvesters, tres Interceptors y un Flux Node, escalonados entre los segundos 2 y 47. Flux genera hasta tres drones activos. Cada abducción completada puede producir un Wraith. Se comienza con tres naves y dos bombas; reaparición en 1.6 s con protección de 3 s.
 
 La bomba carga 0.25 s, destruye amenazas activas dentro de la vista al pulsarla y limpia sus proyectiles. Conserva colonos y enemigos aún materializándose. Los supervivientes en tierra cuentan para cerrar la oleada: no es obligatorio provocar caídas para ganar.
 
@@ -77,6 +77,18 @@ Verificación física del 2026-09-09: `USB Joystick (Vendor: 0079 Product: 0006)
 
 Selector en título y pausa, con teclado, ratón o izquierda/derecha del mando sobre la opción. Se guarda y se aplica al reanudar, sin reiniciar. Escala nave, enemigos, disparos, caída, recargas y apariciones. Se conserva el paso fijo de 1/60; el nivel cambia cuántos pasos se ejecutan por segundo real. El tiempo del resumen es tiempo de simulación. No modifica daño, puntuación o número de enemigos.
 
+## Oleadas infinitas y récords
+
+No hay última oleada. Tras el resumen elige **SIGUIENTE OLEADA** con Enter o confirmar/Start del mando. Continúas con puntos y naves restantes; cada oleada recibe ocho colonos nuevos y reinicia el portal. Recibes una bomba (máximo tres) y una nave extra cada tres oleadas completadas (máximo tres). Reiniciar comienza desde la primera oleada con cero puntos.
+
+La oleada 1 conserva sus nueve apariciones. Las siguientes añaden dos enemigos por nivel, hasta 33 apariciones por oleada, más un máximo global de tres drones activos. Las composiciones incluyen Harvesters, Interceptors, Wraiths y Flux. La presión `1 + 0.8 × (oleada - 1) / (oleada + 9)` aumenta velocidad enemiga, velocidad de sus proyectiles y frecuencia de ataque; también reduce el intervalo entre apariciones. Se aproxima a 1.8× sin multiplicar entidades indefinidamente. Se combina con la dificultad global elegida. Los bonos de tiempo se calculan con el reloj de cada oleada; el HUD conserva el tiempo total.
+
+Elige tus tres iniciales (A–Z / 0–9) antes de iniciar. Con mando: arriba/abajo cambia el control seleccionado; izquierda/derecha cambia su letra o número. **VER RÉCORDS** está en título, pausa y resumen. El top 10 muestra iniciales, puntos acumulados, oleada alcanzada y dificultad mínima utilizada durante la partida; la fecha aparece al pasar el cursor sobre la fila. Desempate por oleada y fecha. No registra partidas con cero puntos.
+
+Se actualiza una sola entrada por partida al cerrar una oleada, perder, salir al menú, reiniciar, consultar la tabla o cerrar/recargar la página. No necesitas escribir al perder y puedes jugar todo con mando. Si bajas la dificultad, el récord refleja ese nivel aunque luego lo subas. Los escenarios y pasos manuales de diagnóstico no registran récords.
+
+Guardado únicamente en este navegador/origen mediante `localStorage` (`void-rescue.records.v1` e iniciales en `void-rescue.pilot`). Desarrollo y preview tienen tablas separadas por puerto. No hay cuentas ni clasificación en línea; borrar los datos del sitio elimina los récords. Cerrar el proceso por la fuerza podría perder puntos posteriores al último guardado. Si el almacenamiento está bloqueado o lleno, se mantiene la tabla durante la sesión y el panel avisa. No guarda posiciones para continuar una partida tras recargar.
+
 ## Audio y explosiones
 
 Disparos con pulso agudo, golpe grave y ataque de ruido; impactos con ruido filtrado y resonancia; explosiones con transitorio, subgrave, cola de ruido y fragmentación metálica. Variación determinista, panorámica, límite de voces, compresor y saturación suave final. Se mantienen silencio y volumen.
@@ -94,7 +106,7 @@ La prueba offline usa diez explosiones/bombas superpuestas y seis disparos a 48 
 - `src/audio/`: efectos Web Audio diferenciados, panorámica circular, límite de voces y compresor maestro.
 - `src/ui/`: radar, avisos, instrumentos y resumen; `src/app/`: coordinación y diagnóstico.
 
-Mundo circular de 2400 unidades, proyectiles y rescate con barrido para movimientos rápidos y costura. El límite inferior sigue el terreno: tocarlo no destruye la nave. Altura máxima 82. Colonos entregados a salvo de nuevas capturas. Portal de demostración sin segundo mundo. Parámetros principales en `config.ts` y `combat/types.ts`; apariciones en `combat/scenarios.ts`.
+Mundo circular de 2400 unidades, proyectiles y rescate con barrido para movimientos rápidos y costura. El límite inferior sigue el terreno: tocarlo no destruye la nave. Altura máxima 82. Colonos entregados a salvo de nuevas capturas. Portal de demostración sin segundo mundo. Parámetros principales en `config.ts` y `combat/types.ts`; progresión y apariciones en `combat/Progression.ts`; récords en `game/Records.ts`.
 
 Geometría y sonidos procedurales originales. Ningún gráfico/sonido de las referencias se carga. Sin React, motor físico, ECS externo, workers, backend, telemetría, claves o CDN. Proyectiles con cadencia y vida limitadas; las mediciones no justifican un pool adicional de simulación.
 
@@ -118,7 +130,7 @@ npm run test:e2e
 
 Playwright inicia/reutiliza desarrollo con un solo worker. `npm run test:e2e:headed` muestra recorridos. Con preview en 4173 activo, `npm run test:production` comprueba inicio, movimiento, pausa y ausencia del diagnóstico en el build, en ambos backends.
 
-Resultados del incremento de combate, 2026-09-09:
+Resultados previos de combate y mando, 2026-09-09 (conservados como historial):
 
 - TypeScript estricto y build aprobados. Aviso de tamaño: ~958 kB JS / ~269 kB gzip, principalmente Three.js.
 - 42 pruebas Vitest aprobadas: reservas, captura/mutación, liberación, caída suave/mortal, rescate/entrega, daño único, costura, bomba, portal, vidas, finales y determinismo.
@@ -152,7 +164,7 @@ Windows, NVIDIA GeForce RTX 3060, controlador 32.0.16.1088, Chromium 151, 1920×
 | Combate de diagnóstico / WebGPU | 60.01 | 16.66 | 92 | 22 495 |
 | Combate de diagnóstico / WebGL2 | 60.01 | 16.66 | 92 | 22 495 |
 
-La segunda muestra contiene tres enemigos activos, siete colonos, cinco proyectiles y 104 partículas tras disparar durante cuatro segundos. No hubo tiempo de simulación descartado en estas muestras. El incremento de vuelo conservado en Git contiene la verificación inicial de referencias SHA-256 contra el ZIP original; siguen sin modificaciones.
+La segunda muestra contiene tres enemigos activos, siete colonos, cinco proyectiles y 104 partículas tras disparar durante cuatro segundos. El campo droppedSeconds de cada JSON registra cualquier tiempo descartado durante arranque o interrupciones; no se deduce del FPS estable. El incremento de vuelo conservado en Git contiene la verificación inicial de referencias SHA-256 contra el ZIP original; siguen sin modificaciones.
 
 La captura de bomba reúne más de 500 partículas, ~110 draw calls y ~24 700 triángulos. Esa muestra inicial incluye compilación de materiales y es más corta que la ventana estable: consultar su FPS real en `*-explosion-metrics.json`, sin extrapolar 60 FPS constantes durante todo arranque.
 
@@ -177,4 +189,15 @@ Escenarios: `combat-basic`, `abduction-start`, `falling-colonist`, `portal-ready
 
 Mando físico USB Joystick 0079:0006 detectado en Windows y en el navegador integrado; el usuario confirmó cambios de ejes y botones en el panel. Calibración, persistencia y juego con controles asignados se prueban además por emulación. Falta evaluar una partida completa con el mando físico y escuchar la mezcla en altavoces/auriculares. La medición offline de picos no certifica calidad perceptual.
 
-Modelos procedurales de baja complejidad, aún sin alcanzar la dirección artística realista final. Se revisaron composición y legibilidad en capturas sin dar por cerrado el pulido visual del Milestone 1. Sin más oleadas, campaña, guardado de partida ni música. `PLAN.md` conserva el historial y `ACCEPTANCE_CRITERIA.md` detalla la revisión.
+Modelos procedurales de baja complejidad, aún sin alcanzar la dirección artística realista final. Se revisaron composición y legibilidad en capturas sin dar por cerrado el pulido visual del Milestone 1. Sin campaña, guardado para reanudar partida ni música. Los récords locales sí persisten. `PLAN.md` conserva el historial y `ACCEPTANCE_CRITERIA.md` detalla la revisión.
+
+## Verificación del modo infinito — 2026-09-09
+
+- `npm run typecheck`, `npm test` y `npm run build`: aprobados; 51 pruebas unitarias. Build ~966 kB JS / ~272 kB gzip, con el aviso conocido de tamaño.
+- `npm run test:e2e`: 36 recorridos aprobados, 18 en WebGPU y 18 en WebGL2, sin errores observados.
+- El piloto de simulación completa tres oleadas consecutivas usando acciones ordinarias. Pruebas de estado recorren cien transiciones; horarios/presión también se verifican hasta oleada 1 000 000. No equivale a jugar un millón de oleadas.
+- Navegador: victoria real con teclado (~50–51 s), puntos conservados al iniciar oleada 2, nuevas apariciones escalonadas, cambio de dificultad y récord recuperado tras recarga. Mando emulado elige iniciales, abre/cierra tabla, continúa oleada y reinicia tras derrota.
+- Tras el ajuste final de combinación entre pestañas y puesto visible, seis recorridos relevantes repetidos y aprobados. `npm run test:production` aprobado en WebGPU y WebGL2: vuelo, pausa, tabla, iniciales persistentes y ausencia de diagnóstico, sin errores observados.
+- Persistencia: top 10 ordenado, duplicados, datos malformados, almacenamiento bloqueado/lleno y combinación de registros de instancias abiertas. Diagnósticos excluidos.
+- Capturas revisadas: `*-endless-title-720p.png`, `*-records.png`, `*-full-wave.png` y `*-wave-two.png`. Referencias sin cambios; sin dependencias nuevas.
+- Pendiente balance percibido de sesiones largas y una partida completa con el mando físico. Los límites de población evitan crecimiento indefinido, pero no se certifica FPS constante para todas las oleadas.

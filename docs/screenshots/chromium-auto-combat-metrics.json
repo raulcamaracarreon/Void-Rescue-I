@@ -1,20 +1,20 @@
 {
   "backend": "webgpu",
-  "fps": 60.014003267429096,
-  "frameMs": 16.66277777777777,
+  "fps": 59.94604855629937,
+  "frameMs": 16.681666666666658,
   "drawCalls": 52,
   "triangles": 18663,
-  "geometries": 69,
+  "geometries": 75,
   "textures": 3,
   "width": 1920,
   "height": 1080,
   "pixelRatio": 1,
-  "cameraX": 467.9011218350733,
+  "cameraX": 467.93463949801253,
   "viewWidth": 199.11111111111111,
   "seed": 8042,
   "scenario": "combat-basic",
   "simulationHz": 60,
-  "frame": 251,
+  "frame": 253,
   "entities": {
     "player": 1,
     "enemies": 1,
@@ -23,6 +23,9 @@
     "particles": 0
   },
   "wave": {
+    "number": 1,
+    "pressure": 1,
+    "ranked": false,
     "outcome": "active",
     "score": 0,
     "delivered": 0,
@@ -83,6 +86,6 @@
       }
     }
   },
-  "droppedSeconds": 0.04989999999999986,
+  "droppedSeconds": 0.04999999999999999,
   "audioError": null
 }

@@ -1,7 +1,7 @@
 {
   "backend": "webgl2",
-  "fps": 60.01400326742911,
-  "frameMs": 16.662777777777766,
+  "fps": 60.014003267429096,
+  "frameMs": 16.66277777777777,
   "drawCalls": 52,
   "triangles": 18663,
   "geometries": 69,
@@ -9,7 +9,7 @@
   "width": 1920,
   "height": 1080,
   "pixelRatio": 1,
-  "cameraX": 473.3791852436533,
+  "cameraX": 465.40981122389286,
   "viewWidth": 199.11111111111111,
   "seed": 8042,
   "scenario": "combat-basic",
@@ -23,6 +23,9 @@
     "particles": 0
   },
   "wave": {
+    "number": 1,
+    "pressure": 1,
+    "ranked": true,
     "outcome": "active",
     "score": 0,
     "delivered": 0,

@@ -67,8 +67,8 @@ Revisión 2026-09-09: ciclo de combate, colonos, rescate y oleada implementado y
 
 ## G. Pruebas y diagnóstico
 
-- [x] Las pruebas Vitest pasan (42 pruebas de núcleo, vuelo, combate, rescate, mando y dificultad).
-- [x] Las pruebas Playwright pasan en Chromium (32 recorridos: 16 WebGPU y 16 WebGL2).
+- [x] Las pruebas Vitest pasan (51 pruebas de núcleo, vuelo, combate, rescate, mando, dificultad, oleadas infinitas y récords).
+- [x] Las pruebas Playwright pasan en Chromium (36 recorridos: 18 WebGPU y 18 WebGL2).
 - [x] `window.__VOID_RESCUE__` expone estado, escenarios y métricas (diez escenarios, incluidos los seis obligatorios).
 - [x] Los seis escenarios deterministas requeridos cargan correctamente.
 - [x] Al menos una prueba usa controles reales y no sólo mutación directa del estado.
@@ -87,3 +87,19 @@ Revisión 2026-09-09: ciclo de combate, colonos, rescate y oleada implementado y
 ## Definición de terminado
 
 “Compila” no equivale a “terminado”. El hito está terminado cuando una persona puede iniciar una partida, comprender el objetivo, impedir una captura, rescatar un colono, utilizar sus armas, cerrar la oleada y recibir retroalimentación audiovisual consistente.
+
+## I. Ampliación autorizada: oleadas infinitas y récords
+
+- [x] La victoria permite seguir a la siguiente oleada; no hay oleada final ni reinicio de puntos.
+- [x] Aumentan amenazas y presión enemiga por oleada, con horarios deterministas y población acotada.
+- [x] Ocho colonos nuevos, portal limpio, una bomba de reposición y una nave cada tres victorias, con máximos de tres.
+- [x] Tiempo/bonificación por oleada, sin disparar todo el siguiente horario por el tiempo acumulado.
+- [x] Tres oleadas completas con acciones ordinarias en simulación; cien transiciones verificadas.
+- [x] Recorrido de teclado de oleada 1 a 2, con conservación de recursos, en WebGPU y WebGL2.
+- [x] Iniciales y continuación con joypad; derrota reinicia desde oleada 1.
+- [x] Top 10 local validado, guardado por partida sin duplicados, dificultad mínima y persistencia al recargar.
+- [x] Escenarios/avance manual de diagnóstico excluidos; errores de almacenamiento no bloquean el juego.
+- [x] Registros de otras instancias abiertas se combinan antes de consultar/guardar.
+- [x] Capturas de iniciales a 720p, resumen, tabla y segunda oleada revisadas.
+
+Pendiente de evaluación humana: balance de sesiones largas y experiencia completa con el mando USB físico. Las pruebas no certifican rendimiento constante en todas las oleadas posibles.

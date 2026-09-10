@@ -1,4 +1,4 @@
-import { COMBAT } from './types';
+import { populateColonists, waveSchedule } from './Progression';
 import type { CombatContext } from './types';
 import { spawnEnemy } from './EnemySystem';
 
@@ -9,18 +9,8 @@ export type ScenarioName = typeof SCENARIOS[number];
 export function initializeScenario(ctx: CombatContext, name: ScenarioName): void {
   const s = ctx.state, p = s.player;
   if (!s.enabled) return;
-  s.colonists = COMBAT.colonistX.map((x, i) => ({ id: ctx.nextId(), x, y: ctx.terrain.height(x) + 1.5,
-    vy: 0, status: 'ground', owner: null, homeX: x, walkDirection: i % 2 ? 1 : -1, rescued: false }));
-  if (name === 'combat-basic') {
-    s.schedule = [
-      { at: 2, kind: 'harvester', x: 400, y: 70 }, { at: 7, kind: 'interceptor', x: 510, y: 56 },
-      { at: 11, kind: 'harvester', x: 480, y: 76 }, { at: 17, kind: 'harvester', x: 640, y: 72 },
-      { at: 23, kind: 'interceptor', x: 810, y: 66 }, { at: 29, kind: 'flux', x: 900, y: 64 },
-      { at: 34, kind: 'harvester', x: 1080, y: 76 }, { at: 41, kind: 'harvester', x: 1430, y: 72 },
-      { at: 47, kind: 'interceptor', x: 1680, y: 60 },
-    ];
-    return;
-  }
+  populateColonists(ctx);
+  if (name === 'combat-basic') { s.schedule = waveSchedule(1, s.seed); return; }
   p.invulnerable = 0;
   const c = s.colonists[0]!;
   if (name === 'combat-showcase') {

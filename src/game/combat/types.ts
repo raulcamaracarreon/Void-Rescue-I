@@ -18,6 +18,7 @@ export type EventKind = 'spawn' | 'capture' | 'falling' | 'landing' | 'rescue' |
 export interface GameEvent { id: number; kind: EventKind; x: number; y: number; time: number }
 export interface SpawnEntry { at: number; kind: EnemyKind; x: number; y: number }
 export interface CombatState {
+  wave: number; waveStartedAt: number;
   enabled: boolean; outcome: 'active' | 'victory' | 'defeat';
   colonists: Colonist[]; enemies: Enemy[]; events: GameEvent[];
   schedule: SpawnEntry[]; spawnIndex: number; score: number; kills: number;

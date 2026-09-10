@@ -7,12 +7,14 @@ import type { RenderMetrics } from '../render/Renderer';
 import { Radar } from './Radar';
 import { DIFFICULTIES } from '../game/Difficulty';
 import type { Difficulty } from '../game/Difficulty';
+import { INITIALS } from '../game/Records';
 
 export type AppMode = 'title' | 'playing' | 'paused' | 'result';
 export interface Preferences { muted: boolean; volume: number; reducedMotion: boolean; difficulty: Difficulty }
 export interface UiActions {
   start(): void; resume(): void; restart(): void; menu(): void; pause(): void;
   mute(): void; fullscreen(): void; controller(): void; preferences(value: Preferences): void;
+  result(): void; records(): void; pilot(value: string): void;
 }
 
 export class Interface {
@@ -37,7 +39,7 @@ export class Interface {
   private debugVisible = false;
   private lastMode: AppMode = 'title';
 
-  constructor(private readonly root: HTMLElement, private readonly actions: UiActions, preferences: Preferences) {
+  constructor(private readonly root: HTMLElement, private readonly actions: UiActions, preferences: Preferences, pilot: string) {
     root.innerHTML = `
       <section class="title-screen" aria-labelledby="game-title">
         <div class="topline"><span class="brandmark">V<span>R</span></span><span>COLONIAL RESPONSE DIVISION</span><span class="build-tag">OPERACIÓN RESCATE · 0.2</span></div>
@@ -45,8 +47,9 @@ export class Interface {
           <p class="eyebrow"><i></i> SECTOR 07 / PERÍMETRO EXTERIOR</p>
           <h1 id="game-title">VOID<br><span>RESCUE</span><b>↗</b></h1>
           <p class="tagline">La colonia está lejos.<br>Tu nave es su primera respuesta.</p>
-          <p class="title-description">Destruye a los abductores. Atrapa a los colonos en caída.<br>Desciende y frena para entregarlos. Elimina la oleada.</p>
+          <p class="title-description">Rescata colonos y sobrevive a oleadas cada vez más difíciles.<br>Sin última oleada. ¿Hasta dónde llegará tu récord?</p>
           <label class="difficulty-setting">DIFICULTAD <select aria-label="Dificultad" class="difficulty-select"></select></label>
+          <div class="pilot-setting"><span>PILOTO</span>${[0, 1, 2].map(i => `<select class="pilot-initial" aria-label="Inicial ${i + 1}">${[...INITIALS].map(letter => `<option${pilot[i] === letter ? ' selected' : ''}>${letter}</option>`).join('')}</select>`).join('')}<button class="text-button" data-action="records">VER RÉCORDS ↗</button></div>
           <button class="primary" data-action="start">INICIAR VUELO <span>↗</span></button>
           <button class="controller-open text-button" data-action="controller">CONFIGURAR MANDO USB ↗</button><p class="controller-status"></p>
           <div class="title-controls"><span><kbd>W A S D</kbd> Pilotar</span><span><kbd>ESPACIO</kbd> Disparar</span><span><kbd>SHIFT</kbd> Bomba</span></div>
@@ -79,13 +82,14 @@ export class Interface {
         <button class="controller-open text-button" data-action="controller">CONFIGURAR MANDO USB ↗</button><p class="controller-status"></p>
         <button class="primary" data-action="resume">CONTINUAR VUELO <span>↗</span></button>
         <div class="pause-secondary"><button data-action="restart">Reiniciar vuelo</button><button data-action="menu">Volver al menú</button></div>
-        <button class="text-button pause-fullscreen" data-action="fullscreen">PANTALLA COMPLETA ↗</button>
+        <div class="pause-secondary"><button class="text-button" data-action="records">VER RÉCORDS</button><button class="text-button pause-fullscreen" data-action="fullscreen">PANTALLA COMPLETA ↗</button></div>
       </dialog>
       <dialog class="pause-dialog result-dialog" aria-labelledby="result-title">
-        <p class="eyebrow">OPERACIÓN / INFORME FINAL</p><h2 id="result-title">Oleada completada</h2>
+        <p class="eyebrow" id="result-wave">OPERACIÓN / INFORME DE OLEADA</p><h2 id="result-title">Oleada completada</h2>
         <p id="result-note" class="pause-note"></p><div id="result-stats"></div>
-        <button class="primary" data-action="restart">VOLVER A JUGAR <span>↗</span></button>
-        <button class="text-button result-menu" data-action="menu">VOLVER AL MENÚ</button>
+        <p id="record-status" class="record-status"></p>
+        <button class="primary" data-action="result">SIGUIENTE OLEADA <span>↗</span></button>
+        <div class="pause-secondary"><button class="text-button" data-action="records">VER RÉCORDS</button><button class="text-button result-menu" data-action="menu">VOLVER AL MENÚ</button></div>
         <p class="pad-help">Stick / cruceta: elegir · sur A/×: confirmar · este B/○: volver</p>
       </dialog>
       <aside class="diagnostics" hidden aria-label="Diagnóstico"><strong>TELEMETRÍA / F3</strong><pre id="metrics"></pre></aside>
@@ -117,10 +121,13 @@ export class Interface {
 
     root.querySelectorAll<HTMLButtonElement>('[data-action]').forEach(button => {
       button.addEventListener('click', () => {
-        const action = button.dataset.action as Exclude<keyof UiActions, 'preferences'>;
+        const action = button.dataset.action as Exclude<keyof UiActions, 'preferences' | 'pilot'>;
         actions[action]();
       });
     });
+    root.querySelectorAll<HTMLSelectElement>('.pilot-initial').forEach(select => select.addEventListener('change', () => {
+      actions.pilot([...root.querySelectorAll<HTMLSelectElement>('.pilot-initial')].map(item => item.value).join(''));
+    }));
     this.pause.addEventListener('cancel', event => { event.preventDefault(); actions.resume(); });
     this.result.addEventListener('cancel', event => { event.preventDefault(); actions.menu(); });
     for (const input of [this.volume, this.reduced, this.muteCheck]) input.addEventListener('input', () => {
@@ -146,6 +153,8 @@ export class Interface {
   }
 
   toggleDiagnostics(): void { this.debugVisible = !this.debugVisible; this.diagnostics.hidden = !this.debugVisible; }
+
+  recordStatus(text: string): void { this.root.querySelector('#record-status')!.textContent = text; }
 
   navigatePad(command: { x: number; y: number; confirm: boolean; back: boolean }): void {
     if (command.back) { if (this.lastMode === 'paused') this.actions.resume(); else if (this.lastMode === 'result') this.actions.menu(); return; }
@@ -200,7 +209,7 @@ export class Interface {
     if (gamepad && padLabels && state.portal.ready && this.root.querySelector('#combat-message')!.textContent?.startsWith('PORTAL LISTO')) {
       this.root.querySelector('#combat-message')!.textContent = `PORTAL LISTO · ${padLabels[3]![0]} cerca del anillo para saltar`;
     }
-    if (state.enabled) this.root.querySelector('.mission-status')!.textContent = `OLEADA 01 · ${DIFFICULTIES[difficulty].label.toUpperCase()} ${DIFFICULTIES[difficulty].speed}×`;
+    if (state.enabled) this.root.querySelector('.mission-status')!.textContent = `OLEADA ${String(state.wave).padStart(2, '0')} · ${DIFFICULTIES[difficulty].label.toUpperCase()} ${DIFFICULTIES[difficulty].speed}×`;
     this.backend.textContent = metrics.backend.toUpperCase();
     if (!this.hud.hidden) this.radar.draw(state, metrics.cameraX, metrics.viewWidth);
     if (this.debugVisible) this.root.querySelector('#metrics')!.textContent = [
@@ -220,6 +229,7 @@ export class Interface {
     get('.mission p').textContent = state.enabled ? 'DEFENSA DE LA COLONIA' : 'RECONOCIMIENTO ORBITAL';
     get('.mission div>span').textContent = state.enabled ? 'Interrumpe las capturas · atrapa y entrega colonos' : 'Prueba de vuelo · explora el perímetro circular';
     get('.mission-status').textContent = state.enabled ? 'OLEADA 01' : 'VUELO LIBRE';
+    get('.mission-index').textContent = String(state.wave).padStart(2, '0');
     if (!state.enabled) { get('#world-labels').innerHTML = ''; return; }
     const live = state.colonists.filter(c => c.status !== 'lost').length;
     const carrying = state.colonists.filter(c => c.status === 'carried').length;
@@ -249,7 +259,11 @@ export class Interface {
     get('#world-labels').innerHTML = labels.join('');
     if (state.summary) {
       get('#result-title').textContent = state.outcome === 'victory' ? 'Oleada completada.' : 'Misión terminada.';
-      get('#result-note').textContent = state.outcome === 'victory' ? 'Perímetro despejado. La colonia resiste.' : 'No quedan naves de reserva. Puedes volver a intentarlo.';
+      get('#result-wave').textContent = `OPERACIÓN / OLEADA ${state.wave}`;
+      get('#result-note').textContent = state.outcome === 'victory'
+        ? `Siguiente: ${state.wave + 1}. Ocho colonos nuevos · +1 bomba (máx. 3)${state.wave % 3 === 0 ? ' · +1 nave (máx. 3)' : ''}. Conservas tus puntos y naves.`
+        : 'No quedan naves de reserva. Puedes volver a intentarlo.';
+      get('[data-action="result"]').innerHTML = state.outcome === 'victory' ? 'SIGUIENTE OLEADA <span>↗</span>' : 'VOLVER A JUGAR <span>↗</span>';
       get('#result-stats').innerHTML = `<div>Colonos supervivientes <b>${state.summary.survivors}/8</b></div><div>Entregados a salvo <b>${state.summary.rescued}</b></div><div>Bajas <b>${state.summary.lost}</b></div><div>Tiempo <b>${state.summary.time.toFixed(1)} s</b></div><div>Bonificación <b>+${state.summary.bonus}</b></div><div>Puntuación total <b>${state.summary.score}</b></div>`;
     }
   }

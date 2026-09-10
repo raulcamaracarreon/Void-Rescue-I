@@ -1,7 +1,7 @@
 {
   "backend": "webgpu",
-  "fps": 60.01600426780478,
-  "frameMs": 16.662222222222212,
+  "fps": 60.01400326742911,
+  "frameMs": 16.662777777777766,
   "drawCalls": 92,
   "triangles": 22495,
   "geometries": 104,
@@ -23,6 +23,9 @@
     "particles": 104
   },
   "wave": {
+    "number": 1,
+    "pressure": 1,
+    "ranked": false,
     "outcome": "active",
     "score": 700,
     "delivered": 1,
@@ -83,6 +86,6 @@
       }
     }
   },
-  "droppedSeconds": 0.04990000000000008,
+  "droppedSeconds": 0.04999999999999999,
   "audioError": null
 }

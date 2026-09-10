@@ -10,6 +10,10 @@ import { Interface } from '../ui/Interface';
 import type { AppMode, Preferences } from '../ui/Interface';
 import { ControllerPanel } from '../ui/ControllerPanel';
 import { DIFFICULTIES, difficulty } from '../game/Difficulty';
+import { Records } from '../game/Records';
+import type { PlayerRecord } from '../game/Records';
+import { RecordsPanel } from '../ui/RecordsPanel';
+import { wavePressure } from '../game/combat/Progression';
 
 function readPreferences(): Preferences {
   const defaults: Preferences = { muted: false, volume: 0.45, reducedMotion: matchMedia('(prefers-reduced-motion: reduce)').matches, difficulty: 'normal' };
@@ -34,6 +38,9 @@ export class GameApp {
   private readonly graphics: FlightRenderer;
   private readonly ui: Interface;
   private readonly controllerPanel: ControllerPanel;
+  private readonly records = new Records();
+  private readonly recordsPanel: RecordsPanel;
+  private run: Pick<PlayerRecord, 'id' | 'pilot' | 'difficulty' | 'date'> | null = null;
   private mode: AppMode = 'title';
   private preferences = readPreferences();
   private previousTime = 0;
@@ -56,12 +63,16 @@ export class GameApp {
       menu: () => this.menu(), pause: () => this.setPaused(true), mute: () => this.toggleMute(),
       fullscreen: () => { void this.fullscreen(); }, preferences: value => this.savePreferences(value),
       controller: () => { this.setPaused(true); this.controllerPanel.show(); },
-    }, this.preferences);
+      result: () => this.continueResult(), pilot: value => this.records.setPilot(value),
+      records: () => { this.setPaused(true); this.saveRecord(); this.recordsPanel.show(); },
+    }, this.preferences, this.records.pilot);
     this.controllerPanel = new ControllerPanel(root, this.input.controller, () => { this.input.clear(); });
+    this.recordsPanel = new RecordsPanel(root, this.records, () => { this.input.clear(); });
     this.audio.setMuted(this.preferences.muted);
     this.audio.setVolume(this.preferences.volume);
     window.addEventListener('blur', this.onBlur);
     document.addEventListener('visibilitychange', this.onVisibility);
+    window.addEventListener('pagehide', this.onPageHide);
   }
 
   async init(): Promise<void> {
@@ -83,10 +94,12 @@ export class GameApp {
     this.controllerPanel.update();
     if (this.input.disconnected && this.mode === 'playing') { this.setPaused(true); this.ui.disconnected(); }
     const menuInput = this.input.menu();
-    if (this.controllerPanel.open) {
+    if (this.recordsPanel.open) {
+      if (this.input.consume('pause')) this.recordsPanel.close(); else this.recordsPanel.navigate(menuInput);
+    } else if (this.controllerPanel.open) {
       this.input.consume('pause'); this.controllerPanel.navigate(menuInput);
     } else if (this.input.consume('pause')) {
-      if (this.mode === 'title') this.start(); else if (this.mode === 'result') this.restart(); else this.setPaused(this.mode === 'playing');
+      if (this.mode === 'title') this.start(); else if (this.mode === 'result') this.continueResult(); else this.setPaused(this.mode === 'playing');
     } else if (this.mode !== 'playing') {
       this.ui.navigatePad(menuInput);
     }
@@ -107,7 +120,14 @@ export class GameApp {
     const state = this.simulation.state;
     const teleport = state.events.find(e => e.id > this.lastTeleport && (e.kind === 'portal' || e.kind === 'respawn'));
     if (teleport) { this.lastTeleport = teleport.id; this.graphics.reset(state, false); }
-    if (state.enabled && state.outcome !== 'active' && this.mode === 'playing') this.setMode('result');
+    if (state.enabled && state.outcome !== 'active' && this.mode === 'playing') {
+      this.saveRecord();
+      const rank = this.run ? this.records.list().findIndex(record => record.id === this.run!.id) + 1 : 0;
+      this.ui.recordStatus(this.run && state.score === 0 ? 'Sin puntos registrados. ¡Inténtalo otra vez!' : this.run
+        ? `${this.run.pilot} · ${rank ? `Puesto ${rank}/10 · ${this.records.persistent ? 'Guardado' : 'Solo esta sesión'}` : 'Fuera del top 10'} · ${DIFFICULTIES[this.run.difficulty].label} (mínima usada)`
+        : 'Práctica de diagnóstico · no registra récords');
+      this.setMode('result');
+    }
     this.audio.events(state.events, state.player.x);
     this.audio.update(state.player.thrust, Math.abs(state.player.vx), this.mode === 'playing' && state.player.alive);
     try {
@@ -135,6 +155,8 @@ export class GameApp {
   }
 
   start(): void {
+    this.saveRecord();
+    this.run = { id: crypto.randomUUID(), pilot: this.records.pilot, difficulty: this.preferences.difficulty, date: new Date().toISOString() };
     this.unlockAudio();
     this.simulation = new Simulation(this.simulation.state.seed, 'combat-basic');
     this.audio.resetEvents(); this.lastTeleport = 0;
@@ -143,6 +165,7 @@ export class GameApp {
   }
 
   restart(): void {
+    if (this.simulation.state.enabled) { this.start(); return; }
     this.simulation = new Simulation(this.simulation.state.seed, this.simulation.state.enabled ? 'combat-basic' : 'flight-basic');
     this.audio.resetEvents(); this.lastTeleport = 0;
     this.graphics.reset(this.simulation.state, false);
@@ -150,6 +173,7 @@ export class GameApp {
   }
 
   menu(): void {
+    this.saveRecord(); this.run = null;
     this.simulation = new Simulation(this.simulation.state.seed);
     this.audio.resetEvents(); this.lastTeleport = 0;
     this.graphics.reset(this.simulation.state, true);
@@ -168,6 +192,10 @@ export class GameApp {
   }
 
   private savePreferences(preferences: Preferences): void {
+    if (this.run && DIFFICULTIES[preferences.difficulty].speed < DIFFICULTIES[this.run.difficulty].speed) {
+      this.run.difficulty = preferences.difficulty;
+      this.saveRecord();
+    }
     this.preferences = preferences;
     this.audio.setMuted(preferences.muted);
     this.audio.setVolume(preferences.volume);
@@ -184,6 +212,19 @@ export class GameApp {
 
   private onBlur = (): void => { if (this.mode === 'playing') this.setPaused(true); };
   private onVisibility = (): void => { if (document.hidden) this.onBlur(); };
+  private onPageHide = (): void => { this.saveRecord(); };
+
+  private saveRecord(): void {
+    if (!this.run) return;
+    this.records.save({ ...this.run, score: this.simulation.state.score, wave: this.simulation.state.wave });
+  }
+
+  private continueResult(): void {
+    if (this.simulation.nextWave()) {
+      this.unlockAudio(); this.audio.resetEvents(); this.lastTeleport = 0;
+      this.graphics.reset(this.simulation.state, false); this.setMode('playing');
+    } else this.restart();
+  }
 
   private diagnostics() {
     return Object.freeze({
@@ -194,6 +235,7 @@ export class GameApp {
       loadScenario: (name: string, seed = this.simulation.state.seed) => {
         if (!(SCENARIOS as readonly string[]).includes(name)) throw new Error(`Escenario no implementado: ${name}. Disponibles: ${SCENARIOS.join(', ')}`);
         if (!Number.isFinite(seed)) throw new Error('La semilla debe ser finita.');
+        this.run = null;
         this.simulation = new Simulation(seed, name as ScenarioName);
         this.audio.resetEvents(); this.lastTeleport = 0;
         this.graphics.reset(this.simulation.state, false);
@@ -203,6 +245,7 @@ export class GameApp {
       step: (frames: number) => {
         if (this.mode !== 'paused') throw new Error('Pausa la simulación antes de avanzar por cuadros.');
         if (!Number.isInteger(frames) || frames < 0 || frames > 3600) throw new Error('frames debe ser un entero entre 0 y 3600.');
+        this.run = null;
         for (let i = 0; i < frames; i++) this.simulation.update(this.clock.dt, IDLE_INPUT);
       },
       getMetrics: () => ({ ...this.graphics.metrics(), seed: this.simulation.state.seed,
@@ -210,7 +253,7 @@ export class GameApp {
         entities: { player: Number(this.simulation.state.player.alive), enemies: this.simulation.state.enemies.length,
           colonists: this.simulation.state.colonists.filter(c => c.status !== 'lost').length, projectiles: this.simulation.state.shots.length,
           particles: this.graphics.combat.particleCount },
-        wave: { outcome: this.simulation.state.outcome, score: this.simulation.state.score, delivered: this.simulation.state.delivered,
+        wave: { number: this.simulation.state.wave, pressure: wavePressure(this.simulation.state.wave), ranked: Boolean(this.run), outcome: this.simulation.state.outcome, score: this.simulation.state.score, delivered: this.simulation.state.delivered,
           remainingSpawns: this.simulation.state.schedule.length - this.simulation.state.spawnIndex },
         difficulty: this.preferences.difficulty, speed: DIFFICULTIES[this.preferences.difficulty].speed,
         controller: this.input.controller.snapshot(), droppedSeconds: this.clock.droppedSeconds, audioError: this.audioError }),
@@ -244,6 +287,7 @@ export class GameApp {
     this.input.dispose(); this.audio.dispose(); this.graphics.dispose();
     window.removeEventListener('blur', this.onBlur);
     document.removeEventListener('visibilitychange', this.onVisibility);
+    window.removeEventListener('pagehide', this.onPageHide);
     delete window.__VOID_RESCUE__;
   }
 }

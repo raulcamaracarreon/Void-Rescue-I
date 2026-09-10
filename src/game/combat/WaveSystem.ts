@@ -6,14 +6,14 @@ import { distance } from './spatial';
 import { spawnEnemy } from './EnemySystem';
 
 export function emptyCombat(enabled: boolean): CombatState {
-  return { enabled, outcome: 'active', colonists: [], enemies: [], events: [], schedule: [], spawnIndex: 0,
+  return { wave: 1, waveStartedAt: 0, enabled, outcome: 'active', colonists: [], enemies: [], events: [], schedule: [], spawnIndex: 0,
     score: 0, kills: 0, delivered: 0, lives: 3, bombs: 2, respawnTimer: 0,
     portal: { x: 330, y: 46, ready: false, used: false, cooldown: 0 }, bomb: null, summary: null, colonyLost: false };
 }
 
 export function updateWave(ctx: CombatContext, dt: number, portalPressed: boolean): void {
   const s = ctx.state, p = s.player;
-  while (s.spawnIndex < s.schedule.length && s.schedule[s.spawnIndex]!.at <= s.time) {
+  while (s.spawnIndex < s.schedule.length && s.schedule[s.spawnIndex]!.at <= s.time - s.waveStartedAt) {
     const entry = s.schedule[s.spawnIndex++]!;
     let x = entry.x;
     if (distance({ x, y: entry.y }, p) < 55) x = wrapX(p.x + 90 * p.facing, CONFIG.worldWidth);
@@ -37,8 +37,9 @@ export function resolveWave(ctx: CombatContext): void {
   }
   if (s.outcome !== 'active' && !s.summary) {
     const survivors = s.colonists.filter(c => c.status !== 'lost').length;
-    const bonus = s.outcome === 'victory' ? survivors * COMBAT.survivorBonus + Math.max(0, 180 - Math.floor(s.time)) * 10 : 0;
+    const time = s.time - s.waveStartedAt;
+    const bonus = s.outcome === 'victory' ? survivors * COMBAT.survivorBonus + Math.max(0, 180 - Math.floor(time)) * 10 : 0;
     s.score += bonus;
-    s.summary = { survivors, lost: s.colonists.length - survivors, rescued: s.delivered, score: s.score, time: s.time, bonus };
+    s.summary = { survivors, lost: s.colonists.length - survivors, rescued: s.delivered, score: s.score, time, bonus };
   }
 }

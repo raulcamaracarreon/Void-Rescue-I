@@ -14,6 +14,7 @@ test.beforeEach(async ({ page }, info) => {
   (page as Page & { combatErrors: string[] }).combatErrors = errors;
   await page.goto(info.project.metadata.backend === 'webgl2' ? '/?backend=webgl2' : '/');
   await page.waitForFunction(() => Boolean(window.__VOID_RESCUE__));
+  for (let i = 1; i <= 3; i++) await page.getByRole('combobox', { name: `Inicial ${i}` }).selectOption('A');
   await page.getByRole('button', { name: /INICIAR VUELO/ }).click();
   await mkdir(output, { recursive: true });
 });
@@ -82,6 +83,30 @@ test('oleada principal completa con teclado sin modificar la simulación', async
   expect(s.outcome).toBe('victory'); expect(s.spawnIndex).toBe(s.schedule.length);
   await expect(page.getByRole('heading', { name: 'Oleada completada.' })).toBeVisible();
   await page.screenshot({ path: `${output}/${info.project.name}-full-wave.png` });
+  await page.getByRole('button', { name: 'VER RÉCORDS' }).click();
+  const records = page.getByRole('dialog', { name: /Récords de pilotos/ });
+  await expect(records.locator('tbody tr')).toHaveCount(1);
+  await expect(records.locator('tbody')).toContainText('AAA');
+  await page.screenshot({ path: `${output}/${info.project.name}-records.png` });
+  await records.locator('button').click();
+  await page.getByRole('button', { name: /SIGUIENTE OLEADA/ }).focus();
+  await page.keyboard.press('Enter');
+  await page.waitForFunction(() => window.__VOID_RESCUE__!.getState().wave === 2);
+  const next = await getState(page);
+  expect(next.score).toBe(s.score); expect(next.lives).toBe(s.lives);
+  expect(next.bombs).toBe(Math.min(3, s.bombs + 1)); expect(next.schedule).toHaveLength(11);
+  expect(next.spawnIndex).toBe(0); expect(next.colonists.every(c => c.status === 'ground')).toBe(true);
+  await page.waitForFunction(() => window.__VOID_RESCUE__!.getState().spawnIndex === 1);
+  await page.screenshot({ path: `${output}/${info.project.name}-wave-two.png` });
+  await page.keyboard.press('Escape');
+  await page.getByRole('combobox', { name: 'Dificultad', exact: true }).selectOption('relaxed');
+  await page.getByRole('button', { name: 'Volver al menú' }).click();
+  await page.reload(); await page.waitForFunction(() => Boolean(window.__VOID_RESCUE__));
+  await expect(page.getByRole('combobox', { name: 'Inicial 1' })).toHaveValue('A');
+  await page.getByRole('button', { name: /VER RÉCORDS/ }).click();
+  await expect(records.locator('tbody tr')).toHaveCount(1);
+  await expect(records.locator('tbody tr td').nth(3)).toHaveText('2');
+  await expect(records.locator('tbody')).toContainText('Relajado');
 });
 
 test('siluetas de todas las familias, portal y efectos durante combate', async ({ page }, info) => {

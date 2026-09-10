@@ -9,6 +9,7 @@ import type { ScenarioName } from './combat/scenarios';
 import { updateColonists } from './combat/ColonistSystem';
 import { updateEnemies } from './combat/EnemySystem';
 import { updateBomb, updateLife, updateProjectiles, useBomb } from './combat/CombatSystem';
+import { advanceWave } from './combat/Progression';
 export { SCENARIOS } from './combat/scenarios';
 export type { ScenarioName } from './combat/scenarios';
 
@@ -98,6 +99,12 @@ export class Simulation {
     this.bombHeld = Boolean(input.bomb); this.portalHeld = Boolean(input.portal);
     s.frame++;
     s.time = s.frame / 60;
+  }
+
+  nextWave(): boolean {
+    if (!advanceWave(this.context)) return false;
+    this.shotCooldown = 0; this.bombHeld = false; this.portalHeld = false;
+    return true;
   }
 
   snapshot(): FlightState { return structuredClone(this.state); }

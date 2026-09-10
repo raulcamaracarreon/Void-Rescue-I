@@ -4,6 +4,7 @@ import { COMBAT } from './types';
 import type { CombatContext, Enemy, EnemyKind } from './types';
 import { deltaX, distance } from './spatial';
 import { releaseTarget } from './ColonistSystem';
+import { wavePressure } from './Progression';
 
 export function spawnEnemy(ctx: CombatContext, kind: EnemyKind, x: number, y: number, telegraph = 0.8): Enemy {
   const enemy: Enemy = { id: ctx.nextId(), kind, x: wrapX(x, CONFIG.worldWidth), y, vx: 0, vy: 0,
@@ -14,6 +15,8 @@ export function spawnEnemy(ctx: CombatContext, kind: EnemyKind, x: number, y: nu
 
 export function updateEnemies(ctx: CombatContext, dt: number): void {
   const s = ctx.state, p = s.player;
+  const realDt = dt, pressure = wavePressure(s.wave);
+  dt *= pressure;
   for (const e of [...s.enemies]) {
     e.age += dt;
     if (e.telegraph > 0) { e.telegraph = Math.max(0, e.telegraph - dt); continue; }
@@ -67,12 +70,12 @@ export function updateEnemies(ctx: CombatContext, dt: number): void {
         if (e.kind === 'flux' && s.enemies.filter(e => e.kind === 'drone').length < 3) {
           spawnEnemy(ctx, 'drone', e.x, e.y - 4, 0.4);
         } else if (e.kind !== 'drone' && distance(e, p) < 135) {
-          const speed = 38;
+          const speed = 38 * pressure;
           s.shots.push({ id: ctx.nextId(), x: e.x, y: e.y, vx: dx / length * speed, vy: dy / length * speed,
             remaining: 4, team: 'enemy' });
         }
       }
     }
-    e.vx = deltaX(beforeX, e.x) / dt; e.vy = (e.y - beforeY) / dt;
+    e.vx = deltaX(beforeX, e.x) / realDt; e.vy = (e.y - beforeY) / realDt;
   }
 }

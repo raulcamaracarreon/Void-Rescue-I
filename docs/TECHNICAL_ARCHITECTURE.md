@@ -193,3 +193,9 @@ Estos valores son objetivos, no resultados que puedan declararse sin medición.
 - No cargues código remoto durante la partida.
 - Incluye lockfile.
 
+
+## Continuidad de oleadas y persistencia local — 2026-09-09
+
+`combat/Progression.ts` genera el horario determinista por semilla/oleada y restaura el estado transitorio en el mismo contexto. `Simulation.nextWave()` sólo acepta victoria resuelta: mantiene ids únicos, tiempo total, puntuación y recursos; reinicia cooldowns de entrada, colonos, portal, proyectiles y eventos. `waveStartedAt` separa apariciones/bono de tiempo del reloj global. La presión modifica IA y proyectiles enemigos sin cambiar el paso fijo ni acelerar los controles respecto a la nave.
+
+`game/Records.ts` valida y limita el top 10, mantiene copia de sesión ante fallo de almacenamiento y persiste las iniciales. `GameApp` controla la identidad de partida, conserva la dificultad mínima y actualiza una entrada por id. Cargar un escenario o avanzar cuadros manualmente invalida la partida para registros. `RecordsPanel` presenta datos mediante textContent y comparte las acciones de navegación del mando. Los datos no entran en la simulación determinista.

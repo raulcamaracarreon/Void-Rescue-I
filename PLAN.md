@@ -129,7 +129,7 @@ Salida final: vertical jugable, pruebas, capturas e informe honesto de limitacio
 
 - Más familias de enemigos del `.p8`.
 - Oleadas especiales y destrucción completa del planeta.
-- Progresión, campaña, jefes y guardado.
+- Campaña, jefes, metaprogresión y guardado para reanudar la partida (las oleadas infinitas y los récords locales se autorizaron en el incremento posterior).
 - Recursos glTF elaborados en Blender.
 - Música adaptativa.
 - Publicación y despliegue.
@@ -149,3 +149,21 @@ Resultado de este incremento:
 - Sonidos por capas y mezcla offline estéreo a 48 kHz verificada: pico ~0.623, RMS ~0.081 para explosiones superpuestas; pendiente escucha humana.
 - Capturas revisadas de título, calibración USB, explosiones múltiples y destrucción propia. Escena estable de combate: ~60 FPS, 92 draw calls / 22 495 triángulos, 104 partículas. La captura inicial de bomba tiene >500 partículas y 110 draw calls; su FPS incluye arranque de materiales.
 - Sin nuevas dependencias ni cambios en referencias. Build con aviso de tamaño (~958 kB JS / ~269 kB gzip).
+
+## Incremento autorizado — oleadas infinitas y récords (2026-09-09)
+
+Solicitud explícita del usuario: continuar con oleadas de dificultad creciente y registrar récords. Amplía el vertical original; no introduce campaña ni cuentas.
+
+- Mantener la oleada 1; generar las siguientes por semilla + número. Más enemigos (9 + 2 por nivel, máximo 33), mayor velocidad enemiga/proyectiles y menor intervalo de aparición/ataque. La presión crece asintóticamente hasta 1.8×; se combina con el ritmo global elegido, sin acelerar la nave respecto al mundo por nivel.
+- Sin oleada final. Resumen intermedio y botón Siguiente oleada, accesible con teclado y mando (confirmar o Start). Conservar puntos, naves y reloj total; reiniciar reloj de oleada, colonos, portal y amenazas. +1 bomba (máximo 3) entre oleadas; +1 nave cada tres completadas (máximo 3).
+- Top 10 local: iniciales de tres letras/dígitos elegibles con teclado o joypad, puntos, oleada alcanzada, dificultad mínima usada y fecha. Actualizar la misma entrada por partida al completar, perder, salir/reiniciar o cerrar página; no guardar posiciones para reanudar. Excluir escenarios/avance manual de diagnóstico. Si el almacenamiento falla, mantener tabla en memoria e informar.
+- Verificar transición repetida, temporizadores/bonos independientes por oleada, presión acotada, persistencia/validación, teclado y joypad, ambos backends, producción y capturas.
+
+Resultado del incremento infinito:
+
+- 51 pruebas unitarias, suite de 36 E2E en WebGPU/WebGL2 y build/typecheck aprobados. Se repitieron los seis recorridos relevantes tras añadir combinación de récords entre pestañas y puesto en el resumen; todos aprobados.
+- Tres oleadas consecutivas completadas por el piloto de simulación con acciones normales. Cien transiciones y presión/horarios hasta oleada 1 000 000 comprobados por pruebas de estado; no se afirma jugar todas esas oleadas.
+- Oleada 1 completada con teclado en navegador (~50–51 s), continuación a 2, recursos intactos, nuevas apariciones, guardado y recuperación del récord tras recargar. Iniciales, tabla, continuación y derrota operadas con mando emulado.
+- Producción comprobada en ambos backends: inicio, movimiento, pausa, apertura/cierre de tabla con Escape conservando pausa, iniciales persistentes y ausencia del diagnóstico. Sin errores observados.
+- Capturas de título 720p, tabla local, informe y oleada 2 revisadas. Sin referencias ni dependencias modificadas. Build ~966 kB JS / ~272 kB gzip; permanece el aviso de tamaño.
+- Pendiente balance humano de partidas largas; no se afirma una sesión infinita con mando físico ni rendimiento constante a cualquier carga.
