@@ -8,6 +8,8 @@ export class AudioEngine {
   private master: GainNode | null = null;
   private engineGain: GainNode | null = null;
   private engine: OscillatorNode | null = null;
+  private engineWhine: OscillatorNode | null = null;
+  private engineWhineGain: GainNode | null = null;
   muted = false;
   volume = 0.45;
   private lastEventId = 0;
@@ -20,14 +22,22 @@ export class AudioEngine {
       const master = this.master = masterBus(context, context.destination);
       this.combat = new CombatSound(context, master);
       const engine = this.engine = context.createOscillator();
-      engine.type = 'sawtooth';
+      engine.type = 'triangle';
       const filter = context.createBiquadFilter();
-      filter.type = 'lowpass';
-      filter.frequency.value = 160;
+      filter.type = 'bandpass';
+      filter.frequency.value = 115; filter.Q.value = 0.7;
       const gain = this.engineGain = context.createGain();
       gain.gain.value = 0;
       engine.connect(filter).connect(gain).connect(master);
+      const whine = this.engineWhine = context.createOscillator();
+      whine.type = 'sine';
+      const whineFilter = context.createBiquadFilter();
+      whineFilter.type = 'lowpass'; whineFilter.frequency.value = 2600;
+      const whineGain = this.engineWhineGain = context.createGain();
+      whineGain.gain.value = 0;
+      whine.connect(whineFilter).connect(whineGain).connect(master);
       engine.start();
+      whine.start();
     }
     await this.context.resume();
     this.setVolume(this.volume);
@@ -41,10 +51,14 @@ export class AudioEngine {
   setMuted(value: boolean): void { this.muted = value; this.setVolume(this.volume); }
 
   update(thrust: number, speed: number, active: boolean): void {
-    if (!this.context || !this.engine || !this.engineGain) return;
+    if (!this.context || !this.engine || !this.engineGain || !this.engineWhine || !this.engineWhineGain) return;
     const now = this.context.currentTime;
-    this.engine.frequency.setTargetAtTime(36 + speed * 0.8 + thrust * 15, now, 0.06);
-    this.engineGain.gain.setTargetAtTime(active ? 0.022 + thrust * 0.06 : 0, now, 0.06);
+    // A filtered core plus a speed-linked sine whine reads as an ion drive,
+    // avoiding the low sawtooth tone of a combustion engine.
+    this.engine.frequency.setTargetAtTime(48 + speed * 0.18 + thrust * 18, now, 0.06);
+    this.engineWhine.frequency.setTargetAtTime(145 + speed * 4.2 + thrust * 165, now, 0.045);
+    this.engineGain.gain.setTargetAtTime(active ? 0.012 + thrust * 0.032 : 0, now, 0.06);
+    this.engineWhineGain.gain.setTargetAtTime(active ? 0.006 + thrust * 0.034 : 0, now, 0.045);
   }
 
   pulse(): void {
@@ -92,5 +106,5 @@ export class AudioEngine {
     return { initialized: this.context !== null, state: this.context?.state ?? 'locked', muted: this.muted, volume: this.volume };
   }
 
-  dispose(): void { this.engine?.stop(); void this.context?.close(); }
+  dispose(): void { this.engine?.stop(); this.engineWhine?.stop(); void this.context?.close(); }
 }

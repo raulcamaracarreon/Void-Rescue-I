@@ -18,6 +18,8 @@ export class CameraRig {
     // never displaces that intentional composition.
     const lookAhead = facing * viewWidth * 0.25 + (reducedMotion ? 0 : velocity * 0.035);
     const target = this.playerContinuousX + lookAhead;
-    this.x += (target - this.x) * (1 - Math.exp(-(reducedMotion ? 6 : 14) * Math.min(dt, 0.1)));
+    // A direction reversal completes its visible travel in about one second.
+    // Reduced-motion keeps the framing while slowing that glide further.
+    this.x += (target - this.x) * (1 - Math.exp(-(reducedMotion ? 2 : 3) * Math.min(dt, 0.1)));
   }
 }

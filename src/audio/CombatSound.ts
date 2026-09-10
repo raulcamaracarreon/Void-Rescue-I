@@ -44,17 +44,20 @@ export class CombatSound {
     };
     let last: AudioBufferSourceNode;
     if (kind === 'shot') {
-      tone(1300, 130, 0.14, 0.2, 'triangle'); tone(130, 48, 0.09, 0.28, 'sine');
-      last = noise(0.16, 6500, 900, 0.18);
+      // A rising plasma chirp and a short crystalline tail give the cannon a
+      // high-energy sci-fi identity without masking rapid follow-up shots.
+      tone(310, 2050, 0.1, 0.22, 'sawtooth'); tone(2650, 410, 0.18, 0.14, 'sine');
+      last = noise(0.19, 9800, 1250, 0.2);
     } else if (kind === 'impact') {
       tone(470, 85, 0.18, 0.22, 'triangle');
       last = noise(0.22, 8000, 700, 0.6);
     } else {
-      tone(large ? 85 : 135, 28, large ? 0.85 : 0.55, 0.62, 'sine');
-      tone(290 + seed % 80, 48, 0.23, 0.09, 'triangle');
-      noise(0.24, 11000, 1400, 0.85);
-      noise(0.45, 1900, 140, 0.5, 0.06);
-      last = noise(large ? 1.05 : 0.7, 3800, 160, 0.35, 0.12);
+      tone(large ? 78 : 118, 24, large ? 1.3 : 1.1, 0.7, 'sine');
+      tone(340 + seed % 120, 42, 0.42, 0.14, 'triangle', 0.03);
+      tone(980 + seed % 280, 105, 0.3, 0.1, 'sawtooth', 0.05);
+      noise(0.34, 12000, 1200, 0.92);
+      noise(0.72, 2400, 110, 0.58, 0.06);
+      last = noise(large ? 1.55 : 1.35, 4200, 120, 0.42, 0.12);
     }
     last.onended = () => { cleanup.forEach(node => node.disconnect()); done(); };
   }

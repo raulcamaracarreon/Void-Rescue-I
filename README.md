@@ -101,11 +101,11 @@ Guardado únicamente en este navegador/origen mediante `localStorage` (`void-res
 
 ## Audio y explosiones
 
-Disparos con pulso agudo, golpe grave y ataque de ruido; impactos con ruido filtrado y resonancia; explosiones con transitorio, subgrave, cola de ruido y fragmentación metálica. Variación determinista, panorámica, límite de voces, compresor y saturación suave final. Se mantienen silencio y volumen.
+El propulsor combina un núcleo filtrado y un silbido de iones ligado a velocidad/aceleración, en lugar de un motor de combustión. Los disparos usan un chirrido de plasma ascendente y una cola cristalina; las explosiones combinan transitorio, subgrave, ruido amplio y fragmentación metálica durante más de un segundo. Variación determinista, panorámica, límite de voces, compresor y saturación suave final. Se mantienen silencio y volumen.
 
-Destrucciones con núcleo brillante breve, chispas alargadas, fragmentos giratorios y nube caliente que se disipa. Las partículas continúan disipándose detrás del resumen, pero se congelan en pausa. La opción de reducir efectos baja cantidad/intensidad y elimina las nubes; conserva la información del impacto.
+Destrucciones con núcleo brillante breve, chispas alargadas y fragmentos giratorios que se disipan durante ~1.25 s (hasta ~1.45 s para bomba o destrucción propia). Las partículas continúan disipándose detrás del resumen, pero se congelan en pausa. La opción de reducir efectos baja cantidad/intensidad y elimina las nubes; conserva la información del impacto.
 
-La prueba offline usa diez explosiones/bombas superpuestas y seis disparos a 48 kHz estéreo: pico ~0.623, RMS ~0.081, sin muestras no finitas ni valores fuera de [-1,1]. Evidencia en `*-audio-mix.json`. No sustituye la escucha humana.
+La prueba offline usa diez explosiones/bombas superpuestas y seis disparos a 48 kHz estéreo: pico ~0.639, RMS ~0.092, sin muestras no finitas ni valores fuera de [-1,1]. Evidencia en `*-audio-mix.json`. No sustituye la escucha humana.
 
 ## Arquitectura y decisiones
 
@@ -120,7 +120,7 @@ Mundo circular de 2400 unidades, proyectiles y rescate con barrido para movimien
 
 ## Ajuste de cámara y combate — 2026-09-10
 
-La cámara ahora coloca la nave en el primer cuarto horizontal al orientarse a la derecha y en el tercer cuarto al orientarse a la izquierda. El recorrido hacia esa composición es rápido y continuo, incluso al cruzar la costura del mundo. El pequeño adelanto de velocidad no altera esa referencia visual.
+La cámara ahora coloca la nave en el primer cuarto horizontal al orientarse a la derecha y en el tercer cuarto al orientarse a la izquierda. El recorrido hacia esa composición tarda aproximadamente un segundo y es continuo, incluso al cruzar la costura del mundo. El pequeño adelanto de velocidad no altera esa referencia visual.
 
 Los disparos del jugador sólo pueden dañar objetivos dentro de la ventana principal de juego; los contactos que sólo aparecen en el radar no reciben colisiones. Las destrucciones abandonan el patrón espiral: usan dispersión radial determinista, caótica y breve que alcanza el campo visible. Las apariciones invierten el efecto: partículas cian se contraen desde la pantalla hasta la nave antes de activarla.
 

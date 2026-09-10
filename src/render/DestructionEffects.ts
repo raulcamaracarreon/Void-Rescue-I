@@ -41,7 +41,7 @@ export class DestructionEffects {
       if (age < 0 || !['spawn', 'impact', 'explosion', 'player-hit', 'bomb'].includes(event.kind)) continue;
       const x = nearCameraX(event.x, cameraX, CONFIG.worldWidth);
       const impact = event.kind === 'impact', spawning = event.kind === 'spawn', large = event.kind === 'bomb' || event.kind === 'player-hit';
-      const duration = impact ? 0.3 : spawning ? 0.65 : 0.62;
+      const duration = impact ? 0.3 : spawning ? 0.65 : large ? 1.45 : 1.25;
       if (age > duration) continue;
       const reach = impact ? 14 : spawning ? width * 0.45 : width * 0.75;
       if (Math.abs(x - cameraX) > width / 2 + reach) continue;
@@ -57,12 +57,12 @@ export class DestructionEffects {
         const random = noise(event.id * 73856093 + i * 19349663);
         const variation = noise(event.id * 83492791 + i * 2971215073);
         const angle = variation * Math.PI * 2;
-        const lifetime = spawning ? 0.38 + random * 0.24 : impact ? 0.16 + random * 0.14 : 0.3 + random * 0.32;
+        const lifetime = spawning ? 0.38 + random * 0.24 : impact ? 0.16 + random * 0.14 : 0.65 + random * (large ? 0.8 : 0.6);
         if (age > lifetime) continue;
         const progress = Math.min(1, age / lifetime);
         const travel = spawning
           ? width * (0.12 + random * 0.43) * (1 - progress)
-          : (impact ? 20 + random * 38 : 85 + random * 265) * scale * age;
+          : (impact ? 20 + random * 38 : 85 + random * 265) * scale * (1 - Math.exp(-age * 2.4)) / 2.4;
         this.helper.position.set(x + Math.cos(angle) * travel, event.y + Math.sin(angle) * travel - (spawning ? 0 : age * age * (8 + random * 22)), 14);
         this.helper.rotation.set(0, 0, angle);
         const fade = spawning ? Math.min(1, progress * 3) : 1 - progress;
@@ -75,7 +75,7 @@ export class DestructionEffects {
       }
       if (!impact && !spawning) for (let i = 0; i < (reduced ? 4 : 18) && debrisCount < 128; i++) {
         const random = noise(event.id * 2654435761 + i * 1597334677);
-        const angle = noise(event.id * 40503 + i * 7919) * Math.PI * 2, speed = (45 + random * 105) * scale;
+        const angle = noise(event.id * 40503 + i * 7919) * Math.PI * 2, speed = (30 + random * 70) * scale;
         this.helper.position.set(x + Math.cos(angle) * speed * age, event.y + Math.sin(angle) * speed * age - 8 * age * age, 13);
         this.helper.rotation.set(age * (i + 2), age * 2, angle + age * 5);
         this.helper.scale.setScalar((0.45 + random * 0.8) * Math.max(0, 1 - age / duration));

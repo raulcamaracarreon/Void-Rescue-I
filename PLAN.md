@@ -185,3 +185,13 @@ Solicitud explícita del usuario: al orientar la nave a la derecha/izquierda, ll
 - [x] Ejecutar validación visual en Chromium y actualizar resultados de esta sección.
 
 Validación: TypeScript, 54 pruebas unitarias y build pasaron. Los recorridos de Playwright se actualizaron para seis familias y la nueva transición de cámara; los recorridos concretos de siluetas y costura pasaron en WebGPU/WebGL2. La ejecución completa volvió a generar capturas de ambos backends sin conservar resultados de fallo. Se revisaron `chromium-auto-combat.png` y `chromium-auto-explosion-upgrade.png`: la cámara sitúa la nave en el cuarto izquierdo mirando a la derecha y las partículas se dispersan caóticamente por la vista.
+
+## Ajuste autorizado — ritmo y audio espacial (2026-09-10)
+
+Corrección del usuario: la transición de orientación/cámara debe ocupar aproximadamente un segundo, no 100 ms. Además, las explosiones deben permanecer visibles entre uno y 1.5 segundos, y el láser, destrucción y propulsor deben tener una identidad más espectacular de ciencia ficción.
+
+- [x] Ajustar el desplazamiento de encuadre de cámara a ~1 s (95% del recorrido), sin romper costura ni composición 25%/75%.
+- [x] Extender explosiones normales a ~1.25 s y las grandes a ~1.45 s; conservar impacto breve y partículas aleatorias.
+- [x] Sustituir el motor grave por núcleo filtrado + silbido de iones dependiente de velocidad/aceleración.
+- [x] Reforzar láser de plasma y capas prolongadas de explosión sin clipping.
+- [x] Verificar 54 pruebas unitarias, build y las ocho pruebas de actualización en WebGPU/WebGL2; mezcla offline finita, pico 0.639 y RMS 0.092.

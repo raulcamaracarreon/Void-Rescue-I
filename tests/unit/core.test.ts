@@ -104,10 +104,10 @@ describe('vuelo', () => {
   });
   it('encuadra la nave en el primer o tercer cuarto según su orientación', () => {
     const camera = new CameraRig(400), width = 200;
-    for (let i = 0; i < 30; i++) camera.update(400, 0, 1, width, 1 / 60, false);
-    expect(400 - camera.x + width / 2).toBeCloseTo(width * 0.25, 0);
-    for (let i = 0; i < 30; i++) camera.update(400, 0, -1, width, 1 / 60, false);
-    expect(400 - camera.x + width / 2).toBeCloseTo(width * 0.75, 0);
+    for (let i = 0; i < 60; i++) camera.update(400, 0, 1, width, 1 / 60, false);
+    expect(Math.abs(400 - camera.x + width / 2 - width * 0.25)).toBeLessThan(width * 0.025);
+    for (let i = 0; i < 60; i++) camera.update(400, 0, -1, width, 1 / 60, false);
+    expect(Math.abs(400 - camera.x + width / 2 - width * 0.75)).toBeLessThan(width * 0.025);
   });
   it('dispara hacia la orientación, limita cadencia y retira proyectiles', () => {
     const s = new Simulation();
