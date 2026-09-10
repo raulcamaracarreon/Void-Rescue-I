@@ -83,6 +83,10 @@ test('bomba y destrucción propia producen partículas con opción de reducción
   const metrics = await page.evaluate(() => window.__VOID_RESCUE__!.getMetrics());
   expect(metrics.entities.particles).toBeGreaterThan(120); expect(metrics.drawCalls).toBeLessThan(300);
   await writeFile(`docs/screenshots/${info.project.name}-explosion-metrics.json`, JSON.stringify(metrics, null, 2));
+  await page.waitForTimeout(1500);
+  const expanding = await page.evaluate(() => window.__VOID_RESCUE__!.getMetrics());
+  expect(expanding.entities.particles).toBeGreaterThan(100);
+  await page.screenshot({ path: `docs/screenshots/${info.project.name}-explosion-expansion.png` });
   await page.evaluate(() => window.__VOID_RESCUE__!.loadScenario('player-near-death'));
   await page.waitForFunction(() => !window.__VOID_RESCUE__!.getState().player.alive);
   await page.screenshot({ path: `docs/screenshots/${info.project.name}-player-explosion.png` });

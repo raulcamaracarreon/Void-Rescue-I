@@ -103,7 +103,7 @@ Guardado únicamente en este navegador/origen mediante `localStorage` (`void-res
 
 El propulsor combina un núcleo filtrado y un silbido de iones ligado a velocidad/aceleración, en lugar de un motor de combustión. Los disparos usan un chirrido de plasma ascendente y una cola cristalina; las explosiones combinan transitorio, subgrave, ruido amplio y fragmentación metálica durante más de un segundo. Variación determinista, panorámica, límite de voces, compresor y saturación suave final. Se mantienen silencio y volumen.
 
-Destrucciones con núcleo brillante breve, chispas alargadas y fragmentos giratorios que se disipan durante ~3 s (hasta ~3.2 s para bomba o destrucción propia). Las partículas continúan disipándose detrás del resumen, pero se congelan en pausa. La opción de reducir efectos baja cantidad/intensidad y elimina las nubes; conserva la información del impacto.
+Destrucciones con núcleo brillante breve, chispas alargadas y fragmentos giratorios que se disipan durante ~3 s (hasta ~3.2 s para bomba o destrucción propia). El radio de las partículas se abre gradualmente a lo largo de toda esa animación, en vez de expandirse casi por completo al inicio. Las partículas continúan disipándose detrás del resumen, pero se congelan en pausa. La opción de reducir efectos baja cantidad/intensidad y elimina las nubes; conserva la información del impacto.
 
 La prueba offline usa diez explosiones/bombas superpuestas y seis disparos a 48 kHz estéreo: pico ~0.639, RMS ~0.092, sin muestras no finitas ni valores fuera de [-1,1]. Evidencia en `*-audio-mix.json`. No sustituye la escucha humana.
 

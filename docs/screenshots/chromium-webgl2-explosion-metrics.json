@@ -1,26 +1,26 @@
 {
   "backend": "webgl2",
-  "fps": 49.725651577503406,
-  "frameMs": 20.110344827586218,
-  "drawCalls": 68,
-  "triangles": 28835,
+  "fps": 50.33881897386254,
+  "frameMs": 19.865384615384613,
+  "drawCalls": 76,
+  "triangles": 29471,
   "geometries": 106,
   "textures": 3,
   "width": 1920,
   "height": 1080,
   "pixelRatio": 1,
-  "cameraX": 401.1242363127384,
+  "cameraX": 399.2072613657349,
   "viewWidth": 199.11111111111111,
   "seed": 8042,
   "scenario": "combat-showcase",
   "simulationHz": 60,
-  "frame": 34,
+  "frame": 30,
   "entities": {
     "player": 1,
     "enemies": 0,
     "colonists": 8,
     "projectiles": 0,
-    "particles": 1573
+    "particles": 1662
   },
   "wave": {
     "number": 1,
@@ -110,6 +110,6 @@
       }
     }
   },
-  "droppedSeconds": 0.0831999999999998,
+  "droppedSeconds": 0.09989999999999985,
   "audioError": null
 }

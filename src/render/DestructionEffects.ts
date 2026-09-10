@@ -57,13 +57,17 @@ export class DestructionEffects {
         const random = noise(event.id * 73856093 + i * 19349663);
         const variation = noise(event.id * 83492791 + i * 2971215073);
         const angle = variation * Math.PI * 2;
-        const lifetime = spawning ? 0.38 + random * 0.24 : impact ? 0.16 + random * 0.14 : (large ? 1.6 : 1.4) + random * 1.6;
+        const lifetime = spawning ? 0.38 + random * 0.24 : impact ? 0.16 + random * 0.14 : (large ? 2.35 : 2.2) + random * (large ? 0.85 : 0.8);
         if (age > lifetime) continue;
         const progress = Math.min(1, age / lifetime);
+        // Destruction no longer bursts outward at the start.  Its radius grows
+        // over the complete effect duration, with a deliberately slow opening.
+        const expansion = Math.pow(Math.min(1, age / duration), 1.45);
         const travel = spawning
           ? width * (0.12 + random * 0.43) * (1 - progress)
-          : (impact ? 20 + random * 38 : 85 + random * 265) * scale * (1 - Math.exp(-age * 2.4)) / 2.4;
-        this.helper.position.set(x + Math.cos(angle) * travel, event.y + Math.sin(angle) * travel - (spawning ? 0 : age * age * (8 + random * 22)), 14);
+          : impact ? (20 + random * 38) * progress : (36 + random * 84) * scale * expansion;
+        const fall = spawning ? 0 : impact ? age * age * 4 : (10 + random * 24) * expansion;
+        this.helper.position.set(x + Math.cos(angle) * travel, event.y + Math.sin(angle) * travel - fall, 14);
         this.helper.rotation.set(0, 0, angle);
         const fade = spawning ? Math.min(1, progress * 3) : 1 - progress;
         this.helper.scale.set((spawning ? 0.55 : 0.8 + random * 2.6) * fade, (spawning ? 0.18 : 0.16 + random * 0.28) * fade, 1);
@@ -75,8 +79,10 @@ export class DestructionEffects {
       }
       if (!impact && !spawning) for (let i = 0; i < (reduced ? 4 : 18) && debrisCount < 128; i++) {
         const random = noise(event.id * 2654435761 + i * 1597334677);
-        const angle = noise(event.id * 40503 + i * 7919) * Math.PI * 2, speed = (30 + random * 70) * scale;
-        this.helper.position.set(x + Math.cos(angle) * speed * age, event.y + Math.sin(angle) * speed * age - 8 * age * age, 13);
+        const angle = noise(event.id * 40503 + i * 7919) * Math.PI * 2;
+        const expansion = Math.pow(Math.min(1, age / duration), 1.45);
+        const travel = (20 + random * 60) * scale * expansion;
+        this.helper.position.set(x + Math.cos(angle) * travel, event.y + Math.sin(angle) * travel - (5 + random * 8) * expansion, 13);
         this.helper.rotation.set(age * (i + 2), age * 2, angle + age * 5);
         this.helper.scale.setScalar((0.45 + random * 0.8) * Math.max(0, 1 - age / duration));
         this.helper.updateMatrix(); this.debris.setMatrixAt(debrisCount, this.helper.matrix);

@@ -205,3 +205,7 @@ Solicitud explícita del usuario: extender la difusión de partículas de explos
 - [x] Permitir que un disparo defensor destruya colonos en suelo, objetivo, captura o caída; liberar correctamente la reserva del abductor y mostrar la baja.
 - [x] Mantener protegidos a colonos transportados o ya entregados para impedir bajas retroactivas o autoimpactos inmediatos.
 - [x] Añadir regresión de descenso y fuego aliado; 55 pruebas unitarias y build aprobados. La prueba visual de explosión pasó en WebGPU/WebGL2.
+
+## Corrección — velocidad de expansión de partículas (2026-09-10)
+
+El usuario aclara que la duración no era el defecto: las partículas alcanzaban su radio demasiado pronto. Se reajusta la curva de radio para abrirse lentamente durante los tres segundos completos, con vidas de partícula suficientes para que la cola siga siendo visible.
