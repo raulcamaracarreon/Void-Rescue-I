@@ -2,6 +2,10 @@
 
 Arcade 2.5D de defensa y rescate espacial. Incluye oleadas sin final, dificultad creciente y récords locales, con teclado y joypad: ocho colonos, abductores, mutación, caída, rescate, entrega, combate, bomba, portal, vidas y resumen. El acabado artístico y la evaluación humana del control/audio siguen pendientes.
 
+## Jugar en línea
+
+▶ **[Abrir VOID RESCUE](https://raulcamaracarreon.github.io/Void-Rescue-I/)**
+
 ## Ejecutar
 
 Node.js 22.12 o posterior compatible con Vitest; verificado con Node 24.16.0 y npm 11.13.0.
@@ -19,11 +23,11 @@ npm run build
 npm run preview -- --port 4173
 ```
 
-[Vista previa de producción](http://127.0.0.1:4173). No se ha desplegado a servicios externos.
+[Vista previa local de producción](http://127.0.0.1:4173).
 
 ## Compartir en GitHub Pages
 
-El repositorio incluye `.github/workflows/deploy-pages.yml`. Al crear un repositorio en GitHub, subir la rama `master` y seleccionar **Settings → Pages → Source: GitHub Actions**, cada push construye y publica el juego. La dirección resultante será `https://USUARIO.github.io/NOMBRE-DEL-REPOSITORIO/`.
+El juego está publicado en **[raulcamaracarreon.github.io/Void-Rescue-I](https://raulcamaracarreon.github.io/Void-Rescue-I/)**. El repositorio incluye `.github/workflows/deploy-pages.yml`; cada push a `master` construye y publica automáticamente la versión nueva mediante GitHub Actions.
 
 No hace falta que quien juegue instale nada: abre ese enlace en un navegador moderno. Los récords son locales a cada navegador y no se comparten entre jugadores. GitHub Pages sirve el juego estático; no incluye cuentas, clasificación global ni guardado de partidas en servidor.
 
