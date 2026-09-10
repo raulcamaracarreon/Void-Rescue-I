@@ -41,7 +41,7 @@ export class DestructionEffects {
       if (age < 0 || !['spawn', 'impact', 'explosion', 'player-hit', 'bomb'].includes(event.kind)) continue;
       const x = nearCameraX(event.x, cameraX, CONFIG.worldWidth);
       const impact = event.kind === 'impact', spawning = event.kind === 'spawn', large = event.kind === 'bomb' || event.kind === 'player-hit';
-      const duration = impact ? 0.3 : spawning ? 0.65 : large ? 1.45 : 1.25;
+      const duration = impact ? 0.3 : spawning ? 0.65 : large ? 3.2 : 3;
       if (age > duration) continue;
       const reach = impact ? 14 : spawning ? width * 0.45 : width * 0.75;
       if (Math.abs(x - cameraX) > width / 2 + reach) continue;
@@ -57,7 +57,7 @@ export class DestructionEffects {
         const random = noise(event.id * 73856093 + i * 19349663);
         const variation = noise(event.id * 83492791 + i * 2971215073);
         const angle = variation * Math.PI * 2;
-        const lifetime = spawning ? 0.38 + random * 0.24 : impact ? 0.16 + random * 0.14 : 0.65 + random * (large ? 0.8 : 0.6);
+        const lifetime = spawning ? 0.38 + random * 0.24 : impact ? 0.16 + random * 0.14 : (large ? 1.6 : 1.4) + random * 1.6;
         if (age > lifetime) continue;
         const progress = Math.min(1, age / lifetime);
         const travel = spawning

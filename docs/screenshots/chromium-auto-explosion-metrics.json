@@ -9,7 +9,7 @@
   "width": 1920,
   "height": 1080,
   "pixelRatio": 1,
-  "cameraX": 399.7237969828259,
+  "cameraX": 399.72379698282595,
   "viewWidth": 199.11111111111111,
   "seed": 8042,
   "scenario": "combat-showcase",
@@ -110,6 +110,6 @@
       }
     }
   },
-  "droppedSeconds": 0.08320000000000005,
+  "droppedSeconds": 0.11660000000000012,
   "audioError": null
 }

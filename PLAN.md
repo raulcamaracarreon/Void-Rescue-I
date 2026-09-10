@@ -195,3 +195,13 @@ Corrección del usuario: la transición de orientación/cámara debe ocupar apro
 - [x] Sustituir el motor grave por núcleo filtrado + silbido de iones dependiente de velocidad/aceleración.
 - [x] Reforzar láser de plasma y capas prolongadas de explosión sin clipping.
 - [x] Verificar 54 pruebas unitarias, build y las ocho pruebas de actualización en WebGPU/WebGL2; mezcla offline finita, pico 0.639 y RMS 0.092.
+
+## Ajuste autorizado — persistencia de explosión y riesgo civil (2026-09-10)
+
+Solicitud explícita del usuario: extender la difusión de partículas de explosión a unos tres segundos y eliminar la protección involuntaria de los colonos causada por el límite de altura de la nave defensora.
+
+- [x] Extender la difusión normal de partículas a ~3 s y la grande a ~3.2 s, conservando la trayectoria caótica y el destello inicial breve.
+- [x] Bajar el límite mínimo de la nave al terreno para poder maniobrar a la altura de los colonos.
+- [x] Permitir que un disparo defensor destruya colonos en suelo, objetivo, captura o caída; liberar correctamente la reserva del abductor y mostrar la baja.
+- [x] Mantener protegidos a colonos transportados o ya entregados para impedir bajas retroactivas o autoimpactos inmediatos.
+- [x] Añadir regresión de descenso y fuego aliado; 55 pruebas unitarias y build aprobados. La prueba visual de explosión pasó en WebGPU/WebGL2.

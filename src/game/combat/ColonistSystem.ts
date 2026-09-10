@@ -6,7 +6,7 @@ import { deltaX, sweptHit } from './spatial';
 
 export function releaseTarget(ctx: CombatContext, enemy: Enemy): void {
   const colonist = ctx.state.colonists.find(c => c.id === enemy.target && c.owner === enemy.id);
-  if (colonist) {
+  if (colonist && colonist.status !== 'lost') {
     const captured = colonist.status === 'captured';
     colonist.status = captured ? 'falling' : 'ground';
     colonist.vy = 0; colonist.owner = null;

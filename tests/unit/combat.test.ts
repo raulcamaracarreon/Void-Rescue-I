@@ -139,6 +139,22 @@ describe('combate y oleada', () => {
     expect(s.state.enemies.some(e => e.id === enemy.id)).toBe(true);
     expect(s.state.kills).toBe(0);
   });
+  it('permite descender al terreno y el fuego defensor puede matar a un colono expuesto', () => {
+    const s = scenario(), colonist = s.state.colonists[0]!;
+    s.state.schedule = [{ at: 999, kind: 'harvester', x: 900, y: 60 }];
+    colonist.x = colonist.homeX = 400; colonist.walkDirection = 0;
+    colonist.y = s.context.terrain.height(colonist.x) + 1.5;
+    s.state.player.x = s.state.player.previousX = 388;
+    s.state.player.y = s.state.player.previousY = colonist.y;
+    s.state.player.facing = 1;
+    s.state.shots.push({ id: 99002, x: colonist.x - 1, y: colonist.y, vx: 180, vy: 0, remaining: 1, team: 'player' });
+    tick(s, 1, { x: 0, y: 0, fire: false, view: { centerX: 438, width: 200 } });
+    expect(colonist.status).toBe('lost');
+    expect(s.state.events.some(event => event.kind === 'lost')).toBe(true);
+    s.state.player.x = s.state.player.previousX = colonist.x;
+    tick(s, 120, { x: 0, y: -1, fire: false });
+    expect(s.state.player.y).toBeCloseTo(s.context.terrain.height(colonist.x), 5);
+  });
   it('Crossfire dispara dos proyectiles verticales simultáneos', () => {
     const s = scenario();
     const enemy = spawnEnemy(s.context, 'crossfire', s.state.player.x + 60, s.state.player.y, 0);

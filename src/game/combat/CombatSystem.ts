@@ -46,6 +46,17 @@ function nearest(ctx: CombatContext, x: number): number {
   return Math.min(CONFIG.worldWidth, ...ctx.state.enemies.map(e => Math.abs(deltaX(x, e.x))));
 }
 
+function damageColonist(ctx: CombatContext, colonist: { id: number; x: number; y: number; owner: number | null; status: string; vy: number }): void {
+  if (colonist.status === 'lost' || colonist.status === 'safe' || colonist.status === 'carried') return;
+  if (colonist.owner !== null) {
+    const captor = ctx.state.enemies.find(enemy => enemy.id === colonist.owner);
+    if (captor) captor.target = null;
+  }
+  colonist.owner = null; colonist.status = 'lost'; colonist.vy = 0;
+  ctx.emit('impact', colonist.x, colonist.y);
+  ctx.emit('lost', colonist.x, colonist.y);
+}
+
 export function updateProjectiles(ctx: CombatContext, dt: number, view?: FlightInput['view']): void {
   const s = ctx.state;
   const viewCenter = view?.centerX ?? wrapX(s.player.x + s.player.facing * CONFIG.viewHeight * 16 / 9 / 4, CONFIG.worldWidth);
@@ -55,10 +66,21 @@ export function updateProjectiles(ctx: CombatContext, dt: number, view?: FlightI
     if (shot.team === 'player') {
       // As in the reference game, player shots only resolve against enemies in
       // the main viewport, never against a radar-only contact.
-      const hits = s.enemies.filter(e => e.telegraph <= 0 && Math.abs(deltaX(viewCenter, e.x)) <= viewWidth / 2 + COMBAT.enemyRadius[e.kind]).map(enemy => ({ enemy,
-        t: sweptHit(shot.x, shot.y, dx, dy, enemy, COMBAT.enemyRadius[enemy.kind] + 0.4) }))
+      const hits = [
+        ...s.enemies.filter(e => e.telegraph <= 0 && Math.abs(deltaX(viewCenter, e.x)) <= viewWidth / 2 + COMBAT.enemyRadius[e.kind]).map(enemy => ({ type: 'enemy' as const, target: enemy,
+          t: sweptHit(shot.x, shot.y, dx, dy, enemy, COMBAT.enemyRadius[enemy.kind] + 0.4) })),
+        // Civilians in the active combat space can be hit by defender fire.
+        // Delivered and carried colonists remain protected to avoid retroactive
+        // loss or immediate self-hits during a rescue.
+        ...s.colonists.filter(colonist => !['lost', 'safe', 'carried'].includes(colonist.status) && Math.abs(deltaX(viewCenter, colonist.x)) <= viewWidth / 2 + COMBAT.colonistRadius).map(colonist => ({ type: 'colonist' as const, target: colonist,
+          t: sweptHit(shot.x, shot.y, dx, dy, colonist, COMBAT.colonistRadius) })),
+      ]
         .filter(hit => hit.t !== null).sort((a, b) => a.t! - b.t!);
-      if (hits[0]) { damageEnemy(ctx, hits[0].enemy, 1); shot.remaining = 0; }
+      if (hits[0]) {
+        if (hits[0].type === 'enemy') damageEnemy(ctx, hits[0].target, 1);
+        else damageColonist(ctx, hits[0].target);
+        shot.remaining = 0;
+      }
     } else if (s.player.alive && sweptHit(shot.x, shot.y, dx, dy, s.player, COMBAT.playerRadius) !== null) {
       hitPlayer(ctx); shot.remaining = 0;
     }

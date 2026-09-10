@@ -103,7 +103,7 @@ Guardado únicamente en este navegador/origen mediante `localStorage` (`void-res
 
 El propulsor combina un núcleo filtrado y un silbido de iones ligado a velocidad/aceleración, en lugar de un motor de combustión. Los disparos usan un chirrido de plasma ascendente y una cola cristalina; las explosiones combinan transitorio, subgrave, ruido amplio y fragmentación metálica durante más de un segundo. Variación determinista, panorámica, límite de voces, compresor y saturación suave final. Se mantienen silencio y volumen.
 
-Destrucciones con núcleo brillante breve, chispas alargadas y fragmentos giratorios que se disipan durante ~1.25 s (hasta ~1.45 s para bomba o destrucción propia). Las partículas continúan disipándose detrás del resumen, pero se congelan en pausa. La opción de reducir efectos baja cantidad/intensidad y elimina las nubes; conserva la información del impacto.
+Destrucciones con núcleo brillante breve, chispas alargadas y fragmentos giratorios que se disipan durante ~3 s (hasta ~3.2 s para bomba o destrucción propia). Las partículas continúan disipándose detrás del resumen, pero se congelan en pausa. La opción de reducir efectos baja cantidad/intensidad y elimina las nubes; conserva la información del impacto.
 
 La prueba offline usa diez explosiones/bombas superpuestas y seis disparos a 48 kHz estéreo: pico ~0.639, RMS ~0.092, sin muestras no finitas ni valores fuera de [-1,1]. Evidencia en `*-audio-mix.json`. No sustituye la escucha humana.
 
@@ -116,7 +116,7 @@ La prueba offline usa diez explosiones/bombas superpuestas y seis disparos a 48 
 - `src/audio/`: efectos Web Audio diferenciados, panorámica circular, límite de voces y compresor maestro.
 - `src/ui/`: radar, avisos, instrumentos y resumen; `src/app/`: coordinación y diagnóstico.
 
-Mundo circular de 2400 unidades, proyectiles y rescate con barrido para movimientos rápidos y costura. El límite inferior sigue el terreno: tocarlo no destruye la nave. Altura máxima 82. Colonos entregados a salvo de nuevas capturas. Portal de demostración sin segundo mundo. Parámetros principales en `config.ts` y `combat/types.ts`; progresión y apariciones en `combat/Progression.ts`; récords en `game/Records.ts`.
+Mundo circular de 2400 unidades, proyectiles y rescate con barrido para movimientos rápidos y costura. El límite inferior es el terreno: tocarlo no destruye la nave y permite alcanzar a los colonos a ras de suelo. Los colonos en suelo, objetivo, captura o caída pueden morir por fuego del defensor; los transportados y entregados siguen protegidos. Altura máxima 82. Portal de demostración sin segundo mundo. Parámetros principales en `config.ts` y `combat/types.ts`; progresión y apariciones en `combat/Progression.ts`; récords en `game/Records.ts`.
 
 ## Ajuste de cámara y combate — 2026-09-10
 

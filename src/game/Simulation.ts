@@ -70,7 +70,9 @@ export class Simulation {
     const unwrapped = p.x + p.vx * dt;
     if (unwrapped < 0 || unwrapped >= CONFIG.worldWidth) s.laps++;
     p.x = wrapX(unwrapped, CONFIG.worldWidth);
-    const floor = s.enabled ? this.context.terrain.height(p.x) + 4.3 : CONFIG.minAltitude;
+    // Combat flight can descend to the terrain itself.  This makes the ground
+    // colonists physically reachable (and, deliberately, vulnerable to fire).
+    const floor = s.enabled ? this.context.terrain.height(p.x) : CONFIG.minAltitude;
     p.y = Math.max(floor, Math.min(CONFIG.maxAltitude, p.y + p.vy * dt));
     if ((p.y === floor && p.vy < 0) || (p.y === CONFIG.maxAltitude && p.vy > 0)) p.vy = 0;
     s.distance += Math.abs(p.vx * dt);
