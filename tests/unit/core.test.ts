@@ -126,7 +126,7 @@ describe('gamepad', () => {
   it('lee stick, cruceta, disparo y pausa; desconexión queda neutral', () => {
     const buttons = Array.from({ length: 16 }, () => ({ pressed: false }));
     buttons[0]!.pressed = buttons[9]!.pressed = buttons[14]!.pressed = true;
-    expect(readGamepad({ axes: [0.5, -1], buttons })).toEqual({ x: -1, y: 1, fire: true, pause: true });
-    expect(readGamepad(null)).toEqual({ x: 0, y: -0, fire: false, pause: false });
+    expect(readGamepad({ axes: [0.5, -1], buttons })).toMatchObject({ x: -1, y: 1, fire: true, pause: true });
+    expect(readGamepad(null)).toEqual({ x: 0, y: -0, fire: false, pause: false, back: false, bomb: false, portal: false });
   });
 });

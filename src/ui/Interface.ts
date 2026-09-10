@@ -1,9 +1,12 @@
-import { CONTROL_LABELS } from '../input/bindings';
+import { CONTROL_LABELS, PAD_CONTROL_LABELS } from '../input/bindings';
+import { signedWrappedDeltaX } from '../core/WorldWrap';
+import { CONFIG } from '../game/config';
+import type { GameEvent } from '../game/combat/types';
 import type { FlightState } from '../game/Simulation';
 import type { RenderMetrics } from '../render/Renderer';
 import { Radar } from './Radar';
 
-export type AppMode = 'title' | 'playing' | 'paused';
+export type AppMode = 'title' | 'playing' | 'paused' | 'result';
 export interface Preferences { muted: boolean; volume: number; reducedMotion: boolean }
 export interface UiActions {
   start(): void; resume(): void; restart(): void; menu(): void; pause(): void;
@@ -14,6 +17,7 @@ export class Interface {
   private readonly title: HTMLElement;
   private readonly hud: HTMLElement;
   private readonly pause: HTMLDialogElement;
+  private readonly result: HTMLDialogElement;
   private readonly radar: Radar;
   private readonly diagnostics: HTMLElement;
   private readonly speed: HTMLElement;
@@ -31,18 +35,18 @@ export class Interface {
   private debugVisible = false;
   private lastMode: AppMode = 'title';
 
-  constructor(private readonly root: HTMLElement, actions: UiActions, preferences: Preferences) {
+  constructor(private readonly root: HTMLElement, private readonly actions: UiActions, preferences: Preferences) {
     root.innerHTML = `
       <section class="title-screen" aria-labelledby="game-title">
-        <div class="topline"><span class="brandmark">V<span>R</span></span><span>COLONIAL RESPONSE DIVISION</span><span class="build-tag">PRUEBA DE VUELO · 0.1</span></div>
+        <div class="topline"><span class="brandmark">V<span>R</span></span><span>COLONIAL RESPONSE DIVISION</span><span class="build-tag">OPERACIÓN RESCATE · 0.2</span></div>
         <div class="title-copy">
           <p class="eyebrow"><i></i> SECTOR 07 / PERÍMETRO EXTERIOR</p>
           <h1 id="game-title">VOID<br><span>RESCUE</span><b>↗</b></h1>
           <p class="tagline">La colonia está lejos.<br>Tu nave es su primera respuesta.</p>
-          <p class="title-description">Reconoce el perímetro. Domina la inercia.<br>El rescate comienza con un buen piloto.</p>
+          <p class="title-description">Destruye a los abductores. Atrapa a los colonos en caída.<br>Desciende y frena para entregarlos. Elimina la oleada.</p>
           <button class="primary" data-action="start">INICIAR VUELO <span>↗</span></button>
-          <div class="title-controls"><span><kbd>W A S D</kbd> Pilotar</span><span><kbd>ESPACIO</kbd> Disparo de prueba</span></div>
-          <p class="gamepad-note">Mando: stick o cruceta · botón sur para disparar · Start para iniciar / pausar</p>
+          <div class="title-controls"><span><kbd>W A S D</kbd> Pilotar</span><span><kbd>ESPACIO</kbd> Disparar</span><span><kbd>SHIFT</kbd> Bomba</span></div>
+          <p class="gamepad-note">Joypad: sur A/× disparar y confirmar · oeste X/□ bomba · norte Y/△ portal<br>Stick/cruceta navegar · este B/○ volver · Start pausa</p>
         </div>
         <div class="ship-caption"><span class="caption-line"></span><p>VR—01 <b>RESPONDER</b></p><small>NAVE DE RESPUESTA RÁPIDA</small></div>
         <div class="title-footer"><span><i></i> SISTEMAS DE VUELO LISTOS</span><span>SIMULACIÓN LOCAL / SIN CONEXIÓN EXTERNA</span><button data-action="fullscreen" class="text-button">PANTALLA COMPLETA ↗</button></div>
@@ -55,6 +59,9 @@ export class Interface {
         </header>
         <div class="mission"><span class="mission-index">01</span><div><p>RECONOCIMIENTO ORBITAL</p><span>Prueba de vuelo · explora el perímetro circular</span></div><span class="mission-status">VUELO LIBRE</span></div>
         <div class="coordinates"><span>SECTOR <b id="coordinate">0360</b></span><span>TIEMPO <b id="timer">00:00</b></span></div>
+        <div class="combat-stats" id="combat-stats"></div>
+        <div class="combat-message" id="combat-message" role="status" aria-live="polite"></div>
+        <div class="world-labels" id="world-labels"></div>
         <div class="flight-data"><div><span>VELOCIDAD</span><strong id="speed">000</strong><small>u/s</small><div class="throttle"><i id="throttle"></i></div></div><div><span>ALTITUD</span><strong id="altitude">054</strong><small>u</small></div><div class="distance-block"><span>DISTANCIA RECORRIDA</span><b id="distance">0000 u</b><small>◇ 3 estaciones de referencia</small></div></div>
         <footer class="flight-footer"><div>${CONTROL_LABELS.map(([key, label]) => `<span><kbd>${key}</kbd> ${label}</span>`).join('')}</div><span id="device">TECLADO</span></footer>
       </section>
@@ -68,6 +75,13 @@ export class Interface {
         <div class="pause-secondary"><button data-action="restart">Reiniciar vuelo</button><button data-action="menu">Volver al menú</button></div>
         <button class="text-button pause-fullscreen" data-action="fullscreen">PANTALLA COMPLETA ↗</button>
       </dialog>
+      <dialog class="pause-dialog result-dialog" aria-labelledby="result-title">
+        <p class="eyebrow">OPERACIÓN / INFORME FINAL</p><h2 id="result-title">Oleada completada</h2>
+        <p id="result-note" class="pause-note"></p><div id="result-stats"></div>
+        <button class="primary" data-action="restart">VOLVER A JUGAR <span>↗</span></button>
+        <button class="text-button result-menu" data-action="menu">VOLVER AL MENÚ</button>
+        <p class="pad-help">Stick / cruceta: elegir · sur A/×: confirmar · este B/○: volver</p>
+      </dialog>
       <aside class="diagnostics" hidden aria-label="Diagnóstico"><strong>TELEMETRÍA / F3</strong><pre id="metrics"></pre></aside>
       <span class="backend-tag" id="backend"></span>`;
 
@@ -77,6 +91,7 @@ export class Interface {
       return element;
     };
     this.title = get('.title-screen'); this.hud = get('.flight-hud'); this.pause = get('.pause-dialog');
+    this.result = get('.result-dialog');
     this.radar = new Radar(get('#radar')); this.diagnostics = get('.diagnostics');
     this.speed = get('#speed'); this.altitude = get('#altitude'); this.coordinate = get('#coordinate');
     this.timer = get('#timer'); this.distance = get('#distance'); this.throttle = get('#throttle');
@@ -92,6 +107,7 @@ export class Interface {
       });
     });
     this.pause.addEventListener('cancel', event => { event.preventDefault(); actions.resume(); });
+    this.result.addEventListener('cancel', event => { event.preventDefault(); actions.menu(); });
     for (const input of [this.volume, this.reduced, this.muteCheck]) input.addEventListener('input', () => {
       actions.preferences({ volume: Number(this.volume.value) / 100, reducedMotion: this.reduced.checked, muted: this.muteCheck.checked });
     });
@@ -101,6 +117,8 @@ export class Interface {
     this.title.hidden = mode !== 'title'; this.hud.hidden = mode === 'title';
     if (mode === 'paused' && !this.pause.open) this.pause.showModal();
     if (mode !== 'paused' && this.pause.open) this.pause.close();
+    if (mode === 'result' && !this.result.open) this.result.showModal();
+    if (mode !== 'result' && this.result.open) this.result.close();
     if (mode === 'title' && this.lastMode !== 'title') this.root.querySelector<HTMLButtonElement>('[data-action="start"]')?.focus();
     this.lastMode = mode;
   }
@@ -114,7 +132,32 @@ export class Interface {
 
   toggleDiagnostics(): void { this.debugVisible = !this.debugVisible; this.diagnostics.hidden = !this.debugVisible; }
 
+  navigatePad(command: { x: number; y: number; confirm: boolean; back: boolean }): void {
+    if (command.back) { if (this.lastMode === 'paused') this.actions.resume(); else if (this.lastMode === 'result') this.actions.menu(); return; }
+    const scope = this.pause.open ? this.pause : this.result.open ? this.result : this.title;
+    const controls = [...scope.querySelectorAll<HTMLElement>('button, input')].filter(e => e.getBoundingClientRect().width > 0);
+    if (!controls.length) return;
+    let index = controls.indexOf(document.activeElement as HTMLElement);
+    if (index < 0) index = 0;
+    let selected = controls[index]!;
+    if (command.x && selected instanceof HTMLInputElement && selected.type === 'range') {
+      selected.value = String(Math.max(Number(selected.min), Math.min(Number(selected.max), Number(selected.value) + command.x * Number(selected.step))));
+      selected.dispatchEvent(new Event('input', { bubbles: true }));
+    } else if (command.y || command.x) {
+      index = (index + (command.y || command.x) + controls.length) % controls.length;
+      selected = controls[index]!;
+    }
+    if (command.x || command.y || command.confirm) {
+      this.root.querySelectorAll('.joypad-focus').forEach(e => e.classList.remove('joypad-focus'));
+      selected.classList.add('joypad-focus'); selected.focus({ preventScroll: true });
+      if (command.confirm) selected.click();
+    }
+  }
+
+  disconnected(): void { this.pause.querySelector('.pause-note')!.textContent = 'Joypad desconectado. Reconéctalo o continúa con teclado.'; }
+
   update(state: FlightState, metrics: RenderMetrics, gamepad: boolean): void {
+    this.hud.classList.toggle('combat', state.enabled);
     this.speed.textContent = String(Math.round(Math.abs(state.player.vx))).padStart(3, '0');
     this.altitude.textContent = String(Math.round(state.player.y)).padStart(3, '0');
     this.coordinate.textContent = String(Math.floor(state.player.x)).padStart(4, '0');
@@ -122,6 +165,14 @@ export class Interface {
     this.distance.textContent = `${String(Math.floor(state.distance)).padStart(4, '0')} u`;
     this.throttle.style.width = `${Math.abs(state.player.vx) / 70 * 100}%`;
     this.device.textContent = gamepad ? 'MANDO CONECTADO' : 'TECLADO';
+    const labels = gamepad ? PAD_CONTROL_LABELS : CONTROL_LABELS;
+    const footer = this.root.querySelector('.flight-footer>div')!;
+    const deviceKey = gamepad ? 'pad' : 'keyboard';
+    if (footer.getAttribute('data-device') !== deviceKey) {
+      footer.setAttribute('data-device', deviceKey);
+      footer.innerHTML = labels.map(([key, label]) => `<span><kbd>${key}</kbd> ${label}</span>`).join('');
+    }
+    this.combatHud(state, metrics, gamepad);
     this.backend.textContent = metrics.backend.toUpperCase();
     if (!this.hud.hidden) this.radar.draw(state, metrics.cameraX, metrics.viewWidth);
     if (this.debugVisible) this.root.querySelector('#metrics')!.textContent = [
@@ -134,5 +185,44 @@ export class Interface {
       `X ${state.player.x.toFixed(2)} · Y ${state.player.y.toFixed(2)}`,
       `Proyectiles ${state.shots.length} · Cámara ${metrics.cameraX.toFixed(2)}`,
     ].join('\n');
+  }
+
+  private combatHud(state: FlightState, metrics: RenderMetrics, gamepad: boolean): void {
+    const get = (selector: string) => this.root.querySelector<HTMLElement>(selector)!;
+    get('.mission p').textContent = state.enabled ? 'DEFENSA DE LA COLONIA' : 'RECONOCIMIENTO ORBITAL';
+    get('.mission div>span').textContent = state.enabled ? 'Interrumpe las capturas · atrapa y entrega colonos' : 'Prueba de vuelo · explora el perímetro circular';
+    get('.mission-status').textContent = state.enabled ? 'OLEADA 01' : 'VUELO LIBRE';
+    if (!state.enabled) { get('#world-labels').innerHTML = ''; return; }
+    const live = state.colonists.filter(c => c.status !== 'lost').length;
+    const carrying = state.colonists.filter(c => c.status === 'carried').length;
+    get('#combat-stats').innerHTML = `<span>PUNTOS <b>${String(state.score).padStart(6, '0')}</b></span><span>NAVES <b>${'◆'.repeat(state.lives)}${'◇'.repeat(3 - state.lives)}</b></span><span>BOMBAS <b>${state.bombs}</b></span><span>COLONOS <b>${live}/8</b></span><span>A SALVO <b>${state.delivered}</b></span><span>AMENAZAS <b>${state.enemies.length + state.schedule.length - state.spawnIndex}</b></span>`;
+    const event = [...state.events].reverse().find(e => !['spawn', 'impact', 'explosion'].includes(e.kind) && state.time - e.time < 3);
+    const messages: Partial<Record<GameEvent['kind'], string>> = {
+      capture: '¡CAPTURA DETECTADA! Intercepta al abductor', falling: 'COLONO EN CAÍDA · Atrápalo antes de llegar al suelo',
+      landing: 'COLONO EN TIERRA · Ha sobrevivido a la caída', rescue: 'COLONO A BORDO · Desciende y frena para entregarlo',
+      delivery: 'ENTREGA SEGURA · Portal disponible en el radar', lost: 'COLONO PERDIDO', mutation: 'ABDUCCIÓN COMPLETADA · WRAITH ACTIVO',
+      'bomb-charge': 'CARGANDO BOMBA', bomb: 'BOMBA DETONADA', portal: 'SALTO COMPLETADO · +1000 por el primer salto',
+      'player-hit': 'NAVE DESTRUIDA', respawn: 'REAPARICIÓN · ESCUDO TEMPORAL',
+    };
+    const message = !state.player.alive ? `REAPARICIÓN EN ${Math.max(0, state.respawnTimer).toFixed(1)} s`
+      : carrying ? `COLONO A BORDO · Baja al terreno y frena por debajo de 22 u/s`
+      : state.colonists.some(c => c.status === 'falling') ? 'COLONO EN CAÍDA · Busca ↓ en el radar y atrápalo'
+      : event && messages[event.kind] ? messages[event.kind]!
+      : state.portal.ready ? `PORTAL LISTO · ${gamepad ? 'NORTE Y/△' : 'E'} cerca del anillo para saltar`
+      : 'PROTEGE A LOS COLONOS · Usa el radar para localizar capturas';
+    if (get('#combat-message').textContent !== message) get('#combat-message').textContent = message;
+    const labels = state.colonists.filter(c => c.status !== 'lost' && Math.abs(signedWrappedDeltaX(metrics.cameraX, c.x, CONFIG.worldWidth)) < metrics.viewWidth / 2 - 3)
+      .map(c => {
+        const x = 50 + signedWrappedDeltaX(metrics.cameraX, c.x, CONFIG.worldWidth) / metrics.viewWidth * 100;
+        const y = (108 - c.y - (c.status === 'carried' ? 6 : 0)) / CONFIG.viewHeight * 100;
+        const text = c.status === 'falling' ? '↓ ATRÁPALO' : c.status === 'captured' ? '↑ CAPTURADO' : c.status === 'safe' ? '✓ A SALVO' : c.status === 'carried' ? '↓ ENTREGA' : c.status === 'targeted' ? '! EN PELIGRO' : '◇ COLONO';
+        return `<span class="world-label ${['falling', 'captured', 'targeted'].includes(c.status) ? 'urgent' : ''}" style="left:${x}%;top:${y}%">${text}</span>`;
+      });
+    get('#world-labels').innerHTML = labels.join('');
+    if (state.summary) {
+      get('#result-title').textContent = state.outcome === 'victory' ? 'Oleada completada.' : 'Misión terminada.';
+      get('#result-note').textContent = state.outcome === 'victory' ? 'Perímetro despejado. La colonia resiste.' : 'No quedan naves de reserva. Puedes volver a intentarlo.';
+      get('#result-stats').innerHTML = `<div>Colonos supervivientes <b>${state.summary.survivors}/8</b></div><div>Entregados a salvo <b>${state.summary.rescued}</b></div><div>Bajas <b>${state.summary.lost}</b></div><div>Tiempo <b>${state.summary.time.toFixed(1)} s</b></div><div>Bonificación <b>+${state.summary.bonus}</b></div><div>Puntuación total <b>${state.summary.score}</b></div>`;
+    }
   }
 }

@@ -10,6 +10,7 @@ import { CameraRig } from './CameraRig';
 import { createShip } from './models/Ship';
 import { emission } from './materials';
 import { WorldScene } from './WorldScene';
+import { CombatVisuals } from './CombatVisuals';
 
 export function disposeTree(root: Object3D): void {
   const geometries = new Set<BufferGeometry>(), materials = new Set<Material>();
@@ -38,9 +39,11 @@ export class FlightRenderer {
   private world: WorldScene;
   private seed: number;
   private readonly ship = createShip();
+  readonly combat = new CombatVisuals();
   private readonly shots = new Map<number, Mesh>();
   private readonly shotGeometry = new BoxGeometry(3.4, 0.14, 0.15);
   private readonly shotMaterial = emission(0xbffff1);
+  private readonly hostileShotMaterial = emission(0xff816d);
   private facingAngle = 0;
   private frameTimes: number[] = [];
   private width = 1;
@@ -57,7 +60,7 @@ export class FlightRenderer {
     this.renderer.info.autoReset = false;
     this.camera.position.set(0, 52, 120);
     this.world = new WorldScene(seed);
-    this.scene.add(this.world.group, this.world.backdrop, this.ship.group);
+    this.scene.add(this.world.group, this.world.backdrop, this.ship.group, this.combat.group);
     const hemisphere = new HemisphereLight(0x8fc8df, 0x1c292f, 2.0);
     const key = new DirectionalLight(0xe0ebdf, 3.7);
     key.position.set(-40, 100, 80);
@@ -106,6 +109,13 @@ export class FlightRenderer {
     if (!title) this.rig.update(playerX, p.vx, p.facing, elapsed, reducedMotion);
     this.camera.position.x = this.rig.x;
     this.world.update(this.rig.x, this.viewWidth);
+    this.combat.update(state, this.rig.x, this.viewWidth, reducedMotion);
+    this.ship.group.visible = p.alive || title;
+    if (!reducedMotion) {
+      const impact = state.events.find(e => ['player-hit', 'bomb'].includes(e.kind) && state.time - e.time < 0.45);
+      if (impact) this.camera.position.x += Math.sin(state.time * 75) * (0.45 - (state.time - impact.time)) * 2;
+    }
+    this.renderer.toneMappingExposure = state.colonyLost ? 0.9 : 1.25;
     const y = active ? p.previousY + (p.y - p.previousY) * alpha : p.y;
     this.ship.group.position.set(nearCameraX(playerX, this.rig.x, CONFIG.worldWidth), y, 0);
     const targetAngle = p.facing === 1 ? 0 : Math.PI;
@@ -134,6 +144,9 @@ export class FlightRenderer {
         this.scene.add(mesh);
       }
       mesh.position.set(nearCameraX(shot.x, this.rig.x, CONFIG.worldWidth), shot.y, 0.8);
+      mesh.material = shot.team === 'enemy' ? this.hostileShotMaterial : this.shotMaterial;
+      mesh.scale.set(shot.team === 'enemy' ? 0.4 : 1, shot.team === 'enemy' ? 4 : 1, 1);
+      mesh.rotation.z = Math.atan2(shot.vy, shot.vx);
     }
     this.renderer.info.reset();
     this.renderer.render(this.scene, this.camera);
@@ -157,6 +170,7 @@ export class FlightRenderer {
     this.observer.disconnect();
     disposeTree(this.scene);
     this.shotGeometry.dispose(); this.shotMaterial.dispose();
+    this.hostileShotMaterial.dispose();
     this.renderer.dispose();
   }
 }

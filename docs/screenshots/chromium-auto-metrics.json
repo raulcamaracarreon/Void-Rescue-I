@@ -1,25 +1,32 @@
 {
   "backend": "webgpu",
-  "fps": 60.01400326742911,
-  "frameMs": 16.662777777777766,
-  "drawCalls": 28,
-  "triangles": 17911,
-  "geometries": 48,
+  "fps": 60.01400326742906,
+  "frameMs": 16.66277777777778,
+  "drawCalls": 52,
+  "triangles": 18663,
+  "geometries": 66,
   "textures": 3,
   "width": 1920,
   "height": 1080,
   "pixelRatio": 1,
-  "cameraX": 466.54306783142636,
+  "cameraX": 456.4933915524268,
   "viewWidth": 199.11111111111111,
   "seed": 8042,
-  "scenario": "flight-basic",
+  "scenario": "combat-basic",
   "simulationHz": 60,
   "frame": 240,
   "entities": {
     "player": 1,
-    "enemies": 0,
-    "colonists": 0,
-    "projectiles": 0
+    "enemies": 1,
+    "colonists": 8,
+    "projectiles": 0,
+    "particles": 0
+  },
+  "wave": {
+    "outcome": "active",
+    "score": 0,
+    "delivered": 0,
+    "remainingSpawns": 8
   },
   "droppedSeconds": 0,
   "audioError": null

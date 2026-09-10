@@ -1,0 +1,15 @@
+{
+  "outcome": "victory",
+  "summary": {
+    "survivors": 8,
+    "lost": 0,
+    "rescued": 0,
+    "score": 5550,
+    "time": 50.3,
+    "bonus": 3700
+  },
+  "kills": 9,
+  "spawnIndex": 9,
+  "totalSpawns": 9,
+  "lives": 3
+}

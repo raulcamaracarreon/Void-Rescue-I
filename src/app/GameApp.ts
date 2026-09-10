@@ -37,6 +37,7 @@ export class GameApp {
   private disposed = false;
   private failed = false;
   private audioError: string | null = null;
+  private lastTeleport = 0;
 
   constructor(private readonly canvas: HTMLCanvasElement, root: HTMLElement) {
     const params = new URLSearchParams(location.search);
@@ -73,8 +74,12 @@ export class GameApp {
     const elapsed = this.previousTime ? Math.max(0, (now - this.previousTime) / 1000) : 1 / 60;
     this.previousTime = now;
     this.input.poll();
+    if (this.input.disconnected && this.mode === 'playing') { this.setPaused(true); this.ui.disconnected(); }
+    const menuInput = this.input.menu();
     if (this.input.consume('pause')) {
-      if (this.mode === 'title') this.start(); else this.setPaused(this.mode === 'playing');
+      if (this.mode === 'title') this.start(); else if (this.mode === 'result') this.restart(); else this.setPaused(this.mode === 'playing');
+    } else if (this.mode !== 'playing') {
+      this.ui.navigatePad(menuInput);
     }
     if (this.input.consume('mute')) this.toggleMute();
     if (this.input.consume('restart') && this.mode !== 'title') this.restart();
@@ -82,7 +87,7 @@ export class GameApp {
 
     let alpha = 0;
     if (this.mode === 'playing') {
-      const input = this.input.flight();
+      const input = { ...this.input.flight(), view: { centerX: this.graphics.rig.x, width: this.graphics.viewWidth } };
       alpha = this.clock.advance(elapsed, dt => {
         const before = this.simulation.state.shotsFired;
         this.simulation.update(dt, input);
@@ -90,7 +95,11 @@ export class GameApp {
       });
     } else this.clock.reset();
     const state = this.simulation.state;
-    this.audio.update(state.player.thrust, Math.abs(state.player.vx), this.mode === 'playing');
+    const teleport = state.events.find(e => e.id > this.lastTeleport && (e.kind === 'portal' || e.kind === 'respawn'));
+    if (teleport) { this.lastTeleport = teleport.id; this.graphics.reset(state, false); }
+    if (state.enabled && state.outcome !== 'active' && this.mode === 'playing') this.setMode('result');
+    this.audio.events(state.events, state.player.x);
+    this.audio.update(state.player.thrust, Math.abs(state.player.vx), this.mode === 'playing' && state.player.alive);
     try {
       this.graphics.draw(state, alpha, elapsed, this.mode === 'playing', this.mode === 'title', this.preferences.reducedMotion);
       this.ui.update(state, this.graphics.metrics(), this.input.gamepadConnected);
@@ -117,25 +126,28 @@ export class GameApp {
 
   start(): void {
     this.unlockAudio();
-    this.simulation = new Simulation(this.simulation.state.seed);
+    this.simulation = new Simulation(this.simulation.state.seed, 'combat-basic');
+    this.audio.resetEvents(); this.lastTeleport = 0;
     this.graphics.reset(this.simulation.state, false);
     this.setMode('playing');
   }
 
   restart(): void {
-    this.simulation = new Simulation(this.simulation.state.seed);
+    this.simulation = new Simulation(this.simulation.state.seed, this.simulation.state.enabled ? 'combat-basic' : 'flight-basic');
+    this.audio.resetEvents(); this.lastTeleport = 0;
     this.graphics.reset(this.simulation.state, false);
     this.setMode('playing');
   }
 
   menu(): void {
     this.simulation = new Simulation(this.simulation.state.seed);
+    this.audio.resetEvents(); this.lastTeleport = 0;
     this.graphics.reset(this.simulation.state, true);
     this.setMode('title');
   }
 
   setPaused(value: boolean): void {
-    if (this.mode === 'title') return;
+    if (this.mode !== 'playing' && this.mode !== 'paused') return;
     this.setMode(value ? 'paused' : 'playing');
     if (!value) this.unlockAudio();
   }
@@ -173,6 +185,7 @@ export class GameApp {
         if (!(SCENARIOS as readonly string[]).includes(name)) throw new Error(`Escenario no implementado: ${name}. Disponibles: ${SCENARIOS.join(', ')}`);
         if (!Number.isFinite(seed)) throw new Error('La semilla debe ser finita.');
         this.simulation = new Simulation(seed, name as ScenarioName);
+        this.audio.resetEvents(); this.lastTeleport = 0;
         this.graphics.reset(this.simulation.state, false);
         this.setMode('playing');
       },
@@ -184,7 +197,11 @@ export class GameApp {
       },
       getMetrics: () => ({ ...this.graphics.metrics(), seed: this.simulation.state.seed,
         scenario: this.simulation.state.scenario, simulationHz: 60, frame: this.simulation.state.frame,
-        entities: { player: 1, enemies: 0, colonists: 0, projectiles: this.simulation.state.shots.length },
+        entities: { player: Number(this.simulation.state.player.alive), enemies: this.simulation.state.enemies.length,
+          colonists: this.simulation.state.colonists.filter(c => c.status !== 'lost').length, projectiles: this.simulation.state.shots.length,
+          particles: this.graphics.combat.particleCount },
+        wave: { outcome: this.simulation.state.outcome, score: this.simulation.state.score, delivered: this.simulation.state.delivered,
+          remainingSpawns: this.simulation.state.schedule.length - this.simulation.state.spawnIndex },
         droppedSeconds: this.clock.droppedSeconds, audioError: this.audioError }),
       restart: () => this.restart(),
       listScenarios: () => [...SCENARIOS],

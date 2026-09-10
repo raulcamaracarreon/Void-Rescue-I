@@ -122,7 +122,7 @@ test('diagnóstico determinista, errores explícitos y pausa al perder foco', as
   });
   expect((await state(page)).player).toEqual(snapshot.player);
   expect(await page.evaluate(() => {
-    try { window.__VOID_RESCUE__!.loadScenario('combat-basic'); return ''; }
+    try { window.__VOID_RESCUE__!.loadScenario('unknown-scenario'); return ''; }
     catch (error) { return (error as Error).message; }
   })).toContain('no implementado');
   await page.getByRole('button', { name: /CONTINUAR VUELO/ }).click();

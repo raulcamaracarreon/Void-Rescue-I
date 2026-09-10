@@ -2,9 +2,20 @@
 
 Estado inicial: **por comenzar**.
 
-Estado actual (2026-09-09): **fases 0–2 implementadas y verificadas**. Primer incremento autorizado tras la revisión: vuelo, cámara, mundo circular y radar. El Milestone 1 completo sigue pendiente; no se anticipan sistemas de combate/rescate que todavía no existen.
+Estado actual (2026-09-09): **fases 0–4 implementadas y comprobadas; validación técnica de fase 6 completada**. La fase 5 tiene presentación funcional, pendiente acabado artístico realista y evaluación humana de audio/control. El ciclo de combate y rescate solicitado ya es jugable de extremo a extremo.
 
 Codex debe actualizar casillas, notas y resultados sin borrar el historial de decisiones.
+
+## Incremento autorizado — combate, rescate y joypad (2026-09-09)
+
+Implementado y verificado: colonos, enemigos, rescate, oleada, efectos, audio y usabilidad de joypad. Se conserva la base de vuelo y sus escenarios para regresión.
+
+- Ocho colonos, cinco Harvesters, tres Interceptors y un Flux Node; aparición escalonada. Wraith emerge al completar abducción; drones de apoyo limitados.
+- Rescate por contacto con colono en caída; entrega automática al descender cerca del terreno con velocidad reducida. El límite inferior de vuelo pasa a seguir el terreno para permitir la entrega.
+- Tres naves totales, dos bombas; invulnerabilidad de reaparición. Colisiones y proyectiles usan distancia circular y barrido para no atravesar objetivos a alta velocidad.
+- Portal listo tras una entrega segura. E / botón norte cerca del portal activa una bonificación de salto y transporta al lado opuesto del mundo con protección temporal. Sólo cierra la oleada si no quedan amenazas, apariciones ni colonos capturados, cayendo o transportados. La victoria ordinaria se muestra al resolver todo; el portal nunca omite amenazas pendientes.
+- Joypad estándar: sur disparar/confirmar, oeste bomba, norte portal, este volver, Start pausa; stick/cruceta navegan menús con repetición controlada, izquierda/derecha ajustan volumen. Pausa automática si se desconecta el mando activo. Indicar botones por posición y equivalentes Xbox/PlayStation sin depender del fabricante.
+- Mantener dependencias verificadas del incremento anterior, sin nuevas instalaciones. Añadir estados y sistemas separados, modelos originales, audio/efectos de combate y pruebas unitarias/E2E de los seis escenarios obligatorios y del recorrido completo con controles.
 
 ## Fase 0 — Comprensión y decisiones
 
@@ -59,50 +70,60 @@ Se adelantaron únicamente apoyos de vuelo: proyectiles de prueba sin colisiones
 
 ## Fase 3 — Colonos y abducción
 
-- [ ] Implementar estados de colonos.
-- [ ] Implementar Harvester y reserva de objetivo.
-- [ ] Implementar captura y elevación.
-- [ ] Implementar caída, aterrizaje, muerte, intercepción y transporte.
-- [ ] Implementar transformación en Wraith.
-- [ ] Añadir escenarios y pruebas correspondientes.
+- [x] Implementar estados de colonos.
+- [x] Implementar Harvester y reserva de objetivo.
+- [x] Implementar captura y elevación.
+- [x] Implementar caída, aterrizaje, muerte, intercepción y transporte.
+- [x] Implementar transformación en Wraith.
+- [x] Añadir escenarios y pruebas correspondientes.
 
 Punto de control: el ciclo captura–liberación–rescate funciona de extremo a extremo.
 
 ## Fase 4 — Combate y oleada
 
-- [ ] Implementar cañón lineal y colisiones.
-- [ ] Implementar Interceptor.
-- [ ] Implementar Flux Node y drones mínimos.
-- [ ] Implementar bomba inteligente.
-- [ ] Implementar aparición escalonada.
-- [ ] Implementar puntuación, vidas, reaparición, victoria y derrota.
-- [ ] Implementar portal y resumen de oleada.
+- [x] Implementar cañón lineal y colisiones.
+- [x] Implementar Interceptor.
+- [x] Implementar Flux Node y drones mínimos.
+- [x] Implementar bomba inteligente.
+- [x] Implementar aparición escalonada.
+- [x] Implementar puntuación, vidas, reaparición, victoria y derrota.
+- [x] Implementar portal y resumen de oleada.
 
 Punto de control: una oleada completa puede jugarse y terminarse.
 
 ## Fase 5 — Presentación
 
-- [ ] Aplicar materiales e iluminación de ciencia ficción realista.
-- [ ] Añadir TSL a portal, propulsores, impactos y bomba.
-- [ ] Añadir partículas y sacudida controlada.
-- [ ] Crear HUD e instrumentación final del vertical.
-- [ ] Crear audio procedural.
-- [ ] Añadir reducción de destellos y movimiento.
+- [ ] Aplicar materiales e iluminación de ciencia ficción realista (PBR y luces presentes; acabado procedural aún por pulir).
+- [x] Añadir TSL a portal, propulsores, impactos y bomba.
+- [x] Añadir partículas y sacudida controlada.
+- [x] Crear HUD e instrumentación funcional del vertical (sujeto a pulido visual).
+- [x] Crear audio procedural.
+- [x] Añadir reducción de destellos y movimiento.
 
 Punto de control: presentación coherente sin perder claridad jugable.
 
 ## Fase 6 — Validación
 
-- [ ] Completar escenarios de diagnóstico.
-- [ ] Ejecutar Vitest.
-- [ ] Ejecutar Playwright.
-- [ ] Revisar capturas visuales.
-- [ ] Medir rendimiento y registrar backend.
-- [ ] Corregir errores de consola y defectos críticos.
-- [ ] Completar `README.md`.
-- [ ] Revisar todos los criterios de aceptación.
+- [x] Completar escenarios de diagnóstico.
+- [x] Ejecutar Vitest.
+- [x] Ejecutar Playwright.
+- [x] Revisar capturas visuales.
+- [x] Medir rendimiento y registrar backend.
+- [x] Corregir errores de consola y defectos críticos.
+- [x] Completar `README.md`.
+- [x] Revisar todos los criterios de aceptación.
 
 Salida final: vertical jugable, pruebas, capturas e informe honesto de limitaciones.
+
+## Resultado del incremento de combate — 2026-09-09
+
+- 31 pruebas unitarias y 24 E2E aprobadas; Chromium 151 con WebGPU y WebGL2. TypeScript, build y comprobación de producción aprobados. Se repitieron seis recorridos visuales tras alinear el haz de captura y separar el rótulo de entrega de la nave.
+- Oleada principal completada mediante teclado real generado por Playwright: nueve apariciones eliminadas, ocho supervivientes, resumen alrededor de 50 s. Recorrido separado con teclado comprueba abducción, bomba, caída, recogida, entrega y victoria.
+- Joypad emulado controla juego y menús, volumen, silencio, reducción de efectos, bomba, portal, resultados y desconexión. No hay prueba con mando físico ni escucha humana del audio.
+- Capturas revisadas: combate principal, cuatro familias y drones, portal, abducción, transporte, entrega, victoria principal y 720p. Se diferenciaron alertas de captura/caída/aterrizaje y símbolos críticos del radar; ondas e impactos usan bordes suaves TSL.
+- Medición a 1080p: ~60 FPS en ambos backends; combate de diagnóstico con tres enemigos, siete colonos, cinco proyectiles y dieciocho partículas: 86 draw calls / 22 267 triángulos. No es una prueba de carga máxima.
+- Decisiones de balance: todos los Harvesters que completan captura pueden mutar (sin tope artificial de dos); entregados quedan protegidos; el terreno limita la altura sin causar daño. Portal concede +1000 una vez y no omite amenazas. Documentado en README.
+- Pendiente de cierre artístico/humano: modelos realistas finales, balance percibido, mando físico y clipping audible. Esto no impide jugar el incremento, pero no se declara cerrado el acabado completo del Milestone 1.
 
 ## Trabajo futuro no autorizado todavía
 
