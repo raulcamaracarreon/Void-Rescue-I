@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#071015" />
+    <meta name="description" content="VOID RESCUE. Prueba de vuelo del arcade espacial de defensa y rescate." />
+    <title>VOID RESCUE</title>
+    <link rel="icon" type="image/svg+xml" href="/icon.svg" />
+  </head>
+  <body>
+    <main id="app" aria-label="VOID RESCUE">
+      <div id="viewport">
+        <canvas id="game" aria-label="Escenario tridimensional de vuelo" tabindex="-1"></canvas>
+        <div id="ui"></div>
+        <div id="loading" role="status">VOID RESCUE <span>Inicializando sistemas de vuelo…</span></div>
+      </div>
+    </main>
+    <script type="module" src="/src/app/bootstrap.ts"></script>
+  </body>
+</html>

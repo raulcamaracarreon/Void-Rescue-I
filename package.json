@@ -1,0 +1,26 @@
+{
+  "name": "void-rescue",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "engines": { "node": ">=22.12.0" },
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview --host 127.0.0.1",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "test:production": "node scripts/check-production.mjs",
+    "test:e2e:headed": "playwright test --headed"
+  },
+  "dependencies": { "three": "0.185.1" },
+  "devDependencies": {
+    "@playwright/test": "1.62.0",
+    "@types/node": "22.20.2",
+    "@types/three": "0.185.4",
+    "typescript": "7.0.2",
+    "vite": "8.2.2",
+    "vitest": "5.0.0"
+  }
+}

@@ -1,0 +1,14 @@
+[
+  {
+    "requested": "auto",
+    "activeBackend": "WEBGPU",
+    "errors": [],
+    "passed": true
+  },
+  {
+    "requested": "webgl2",
+    "activeBackend": "WEBGL2",
+    "errors": [],
+    "passed": true
+  }
+]

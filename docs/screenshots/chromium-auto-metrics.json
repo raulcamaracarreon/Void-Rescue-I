@@ -1,0 +1,26 @@
+{
+  "backend": "webgpu",
+  "fps": 60.01400326742911,
+  "frameMs": 16.662777777777766,
+  "drawCalls": 28,
+  "triangles": 17911,
+  "geometries": 48,
+  "textures": 3,
+  "width": 1920,
+  "height": 1080,
+  "pixelRatio": 1,
+  "cameraX": 466.54306783142636,
+  "viewWidth": 199.11111111111111,
+  "seed": 8042,
+  "scenario": "flight-basic",
+  "simulationHz": 60,
+  "frame": 240,
+  "entities": {
+    "player": 1,
+    "enemies": 0,
+    "colonists": 0,
+    "projectiles": 0
+  },
+  "droppedSeconds": 0,
+  "audioError": null
+}
