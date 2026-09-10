@@ -22,7 +22,7 @@ export interface Player {
   vx: number; vy: number; facing: 1 | -1; thrust: number;
   alive: boolean; invulnerable: number;
 }
-export interface Shot { id: number; x: number; y: number; vx: number; vy: number; remaining: number; team: 'player' | 'enemy'; damage?: number }
+export interface Shot { id: number; x: number; y: number; vx: number; vy: number; remaining: number; team: 'player' | 'enemy' }
 export interface FlightState extends CombatState {
   seed: number; frame: number; time: number; distance: number; laps: number;
   player: Player; shots: Shot[]; shotsFired: number;
@@ -87,8 +87,7 @@ export class Simulation {
       this.shotCooldown = profile.playerShotInterval;
       s.shotsFired++;
       s.shots.push({ id: this.nextId++, x: wrapX(p.x + p.facing * 5, CONFIG.worldWidth), y: p.y,
-        vx: CONFIG.shotSpeed * profile.playerShotSpeed * p.facing + p.vx, vy: 0, team: 'player', remaining: CONFIG.shotLifetime,
-        damage: profile.playerShotDamage });
+        vx: CONFIG.shotSpeed * profile.playerShotSpeed * p.facing + p.vx, vy: 0, team: 'player', remaining: CONFIG.shotLifetime });
     }
     if (s.enabled) {
       if (input.bomb && !this.bombHeld) useBomb(this.context, input);

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { Simulation, IDLE_INPUT, SCENARIOS } from '../../src/game/Simulation';
 import type { FlightInput, ScenarioName } from '../../src/game/Simulation';
 import { COMBAT } from '../../src/game/combat/types';
+import type { EnemyKind } from '../../src/game/combat/types';
 import { damageEnemy, hitPlayer } from '../../src/game/combat/CombatSystem';
 import { spawnEnemy } from '../../src/game/combat/EnemySystem';
 import { sweptHit } from '../../src/game/combat/spatial';
@@ -82,6 +83,18 @@ describe('combate y oleada', () => {
     expect(s.state.outcome).toBe('victory'); expect(s.state.kills).toBe(1);
     expect(s.state.summary?.survivors).toBe(8);
     const score = s.state.score; tick(s, 300); expect(s.state.score).toBe(score);
+  });
+  it('un impacto del cañón destruye cualquier familia enemiga, incluso en Sobremarcha', () => {
+    const kinds = Object.keys(COMBAT.enemyHp) as EnemyKind[];
+    for (const kind of kinds) {
+      const s = new Simulation(8042, 'combat-basic', 'overdrive');
+      s.state.colonists = [];
+      const enemy = spawnEnemy(s.context, kind, s.state.player.x + 8, s.state.player.y, 0);
+      s.state.shots.push({ id: 99010, x: enemy.x, y: enemy.y, vx: 0, vy: 0, remaining: 1, team: 'player' });
+      tick(s, 1, { x: 0, y: 0, fire: false, view: { centerX: s.state.player.x, width: 200 } });
+      expect(s.state.enemies.some(current => current.id === enemy.id)).toBe(false);
+      expect(s.state.kills).toBe(1);
+    }
   });
   it('la bomba consume sólo una carga al mantenerla; no mata colonos ni enemigos fuera de vista', () => {
     const s = scenario();

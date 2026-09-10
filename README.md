@@ -80,14 +80,14 @@ Verificación física del 2026-09-09: `USB Joystick (Vendor: 0079 Product: 0006)
 
 | Nivel | Ritmo | Recursos iniciales | Perfil de combate |
 | --- | --- | --- | --- |
-| Recluta | 0.9× | 4 naves, 3 bombas | Menos amenazas; cañón más rápido y potente; enemigos lentos y frágiles. |
-| Relajado | 1× | 4 naves, 3 bombas | Presión suave, arma reforzada y 90% de las apariciones. |
+| Recluta | 0.9× | 4 naves, 3 bombas | Menos amenazas; cañón más rápido; enemigos lentos. |
+| Relajado | 1× | 4 naves, 3 bombas | Presión suave, arma ágil y 90% de las apariciones. |
 | Normal | 1.2× | 3 naves, 2 bombas | Ritmo arcade más ágil; valores de combate y primera oleada de referencia. |
 | Difícil | 1.4× | 3 naves, 2 bombas | 20% más amenazas, fuego y movimiento enemigos más intensos; cañón algo menos eficaz. |
-| Experto | 1.6× | 2 naves, 1 bomba | 40% más amenazas, enemigos resistentes y disparos muy frecuentes. |
+| Experto | 1.6× | 2 naves, 1 bomba | 40% más amenazas y disparos muy frecuentes. |
 | Sobremarcha | 1.8× | 1 nave, 1 bomba | 60% más amenazas, máxima movilidad/fuego enemigo y cañón deliberadamente limitado. |
 
-Selector en título y pausa, con teclado, ratón o izquierda/derecha del mando sobre la opción. Se conserva el paso fijo de 1/60; el nivel cambia cuántos pasos se ejecutan por segundo real. Además del ritmo global, cada perfil controla naves/bombas iniciales y sus límites de reposición, cadencia, velocidad y daño del cañón, y cantidad, velocidad, vida, velocidad de proyectil y frecuencia de fuego enemigos. Cambiarlo durante una partida aplica inmediatamente el ritmo, cañón e IA; los recursos iniciales y la población se aplican al iniciar/reiniciar y en la siguiente oleada para no modificar entidades o conceder recursos a mitad de combate. El tiempo del resumen es tiempo de simulación y la puntuación no se multiplica por dificultad.
+Selector en título y pausa, con teclado, ratón o izquierda/derecha del mando sobre la opción. Se conserva el paso fijo de 1/60; el nivel cambia cuántos pasos se ejecutan por segundo real. Además del ritmo global, cada perfil controla naves/bombas iniciales y sus límites de reposición, cadencia y velocidad del cañón, y cantidad, velocidad, velocidad de proyectil y frecuencia de fuego enemigos. Todos los enemigos caen con un impacto directo del cañón del jugador, en cualquier perfil. Cambiarlo durante una partida aplica inmediatamente el ritmo, cañón e IA; los recursos iniciales y la población se aplican al iniciar/reiniciar y en la siguiente oleada para no modificar entidades o conceder recursos a mitad de combate. El tiempo del resumen es tiempo de simulación y la puntuación no se multiplica por dificultad.
 
 Verificación del ajuste (2026-09-10): `npm run typecheck`, `npm test` (58 pruebas), `npm run build` y los 36 recorridos Playwright de Chromium/WebGPU y WebGL2 aprobados. El build conserva el aviso conocido por un paquete JavaScript de ~971 kB, no un error.
 

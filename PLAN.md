@@ -12,6 +12,10 @@ Implementado: la dificultad deja de ser únicamente un multiplicador del reloj. 
 - El selector sigue disponible en título/pausa y muestra velocidad y naves. Cambiarlo durante una partida actualiza ritmo, cañón e IA sin conceder recursos; recursos/población se usan en la siguiente partida u oleada.
 - El diagnóstico expone el perfil activo completo. Pruebas unitarias verifican recursos, daño y horarios por perfil; Playwright cubre que Experto inicia con 2 naves, 1 bomba y 15 apariciones en la oleada base.
 
+## Equilibrio de impactos — 2026-09-10
+
+Implementado: cualquier impacto directo del cañón del defensor destruye al enemigo tocado, sin excepciones por familia ni dificultad. La nave del jugador mantiene su regla de una colisión enemiga/proyectil por vida; la asimetría anterior de varios impactos para naves hostiles se elimina.
+
 Codex debe actualizar casillas, notas y resultados sin borrar el historial de decisiones.
 
 ## Incremento autorizado — combate, rescate y joypad (2026-09-09)

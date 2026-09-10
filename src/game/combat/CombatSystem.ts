@@ -77,7 +77,10 @@ export function updateProjectiles(ctx: CombatContext, dt: number, view?: FlightI
       ]
         .filter(hit => hit.t !== null).sort((a, b) => a.t! - b.t!);
       if (hits[0]) {
-        if (hits[0].type === 'enemy') damageEnemy(ctx, hits[0].target, shot.damage ?? 1);
+        // Defender shots are deliberately lethal on contact. Enemy endurance
+        // remains useful for bombs and scripted damage, but never makes an
+        // on-screen target absorb several successful player hits.
+        if (hits[0].type === 'enemy') damageEnemy(ctx, hits[0].target, hits[0].target.hp);
         else damageColonist(ctx, hits[0].target);
         shot.remaining = 0;
       }

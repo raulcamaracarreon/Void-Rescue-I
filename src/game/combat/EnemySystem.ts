@@ -8,10 +8,9 @@ import { wavePressure } from './Progression';
 import { difficultyProfile } from '../Difficulty';
 
 export function spawnEnemy(ctx: CombatContext, kind: EnemyKind, x: number, y: number, telegraph = 0.65): Enemy {
-  const profile = difficultyProfile(ctx.state.difficulty);
   const enemy: Enemy = { id: ctx.nextId(), kind, x: wrapX(x, CONFIG.worldWidth), y, vx: 0, vy: 0,
-    hp: Math.max(1, Math.ceil(COMBAT.enemyHp[kind] * profile.enemyHealth)), target: null, phase: kind === 'harvester' ? 'seek' : 'hunt',
-    cooldown: (2 + ctx.random.next()) / profile.enemyFireRate, age: 0, telegraph };
+    hp: COMBAT.enemyHp[kind], target: null, phase: kind === 'harvester' ? 'seek' : 'hunt',
+    cooldown: (2 + ctx.random.next()) / difficultyProfile(ctx.state.difficulty).enemyFireRate, age: 0, telegraph };
   ctx.state.enemies.push(enemy); ctx.emit('spawn', enemy.x, enemy.y); return enemy;
 }
 
@@ -36,7 +35,7 @@ export function updateEnemies(ctx: CombatContext, dt: number): void {
           e.y += COMBAT.liftSpeed * dt; c.x = e.x; c.y = e.y - 5;
           if (e.y >= COMBAT.abductionY) {
             c.status = 'lost'; c.owner = null; e.target = null; e.kind = 'wraith';
-            e.hp = Math.max(1, Math.ceil(COMBAT.enemyHp.wraith * profile.enemyHealth)); e.phase = 'hunt'; ctx.emit('mutation', e.x, e.y);
+            e.hp = COMBAT.enemyHp.wraith; e.phase = 'hunt'; ctx.emit('mutation', e.x, e.y);
           }
         } else {
           const dx = deltaX(e.x, c.x);

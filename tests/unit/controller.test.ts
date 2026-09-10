@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { axis, bindingValue, Controller, defaultProfile, readController } from '../../src/input/Controller';
 import { FixedClock } from '../../src/core/Clock';
-import { DIFFICULTIES, difficulty, difficultyProfile } from '../../src/game/Difficulty';
+import { DIFFICULTIES, difficulty } from '../../src/game/Difficulty';
 import { Simulation } from '../../src/game/Simulation';
 import { waveSchedule } from '../../src/game/combat/Progression';
 import { InputManager } from '../../src/input/InputManager';
@@ -69,7 +69,7 @@ describe('ritmo de dificultad con paso fijo', () => {
     expect(cadet.state.schedule.length).toBeLessThan(normal.state.schedule.length);
     expect(overdrive.state.schedule.length).toBeGreaterThan(normal.state.schedule.length);
     normal.update(1 / 60, { x: 0, y: 0, fire: true });
-    expect(normal.state.shots[0]).toMatchObject({ damage: difficultyProfile('normal').playerShotDamage });
+    expect(normal.state.shots[0]!.vx).toBeGreaterThan(0);
     expect(waveSchedule(4, 8042, 'expert')).toEqual(waveSchedule(4, 8042, 'expert'));
   });
 });
