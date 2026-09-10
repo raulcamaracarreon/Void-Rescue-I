@@ -126,6 +126,8 @@ Los disparos del jugador sólo pueden dañar objetivos dentro de la ventana prin
 
 Se sumó **Crossfire**, una cañonera horizontal de tres impactos que dispara dos proyectiles a la vez, uno vertical hacia arriba y otro hacia abajo. Aparece dos veces más en la primera oleada y entra en las composiciones de las siguientes.
 
+Verificación de este ajuste: `npm test` completó 54 pruebas unitarias; `npm run build` completó el chequeo estricto y la compilación. Playwright ejecutó los 36 recorridos de Chromium y regeneró las capturas WebGPU/WebGL2; las regresiones nuevas de siluetas y costura pasaron explícitamente en ambos backends. Permanece el aviso conocido del bundle JavaScript mayor de 900 kB; no es un error de compilación.
+
 Geometría y sonidos procedurales originales. Ningún gráfico/sonido de las referencias se carga. Sin React, motor físico, ECS externo, workers, backend, telemetría, claves o CDN. Proyectiles con cadencia y vida limitadas; las mediciones no justifican un pool adicional de simulación.
 
 ## Backends y dependencias
